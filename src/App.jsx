@@ -48,7 +48,7 @@ function App() {
     const checkSession = async () => {
       try {
         if (isLogin) {
-          console.log("user already online ")
+          console.log("user already Login ")
           return;
         }
         console.log("user fetched from the server")
@@ -74,7 +74,7 @@ function App() {
       }
     };
     checkSession();
-  }, [dispatch, isLogin]);
+  }, [dispatch]);
 
   if (isCheckingAuth) {
     return null;

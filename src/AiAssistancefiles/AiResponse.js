@@ -1,4 +1,4 @@
-import axios from "axios";
+import OpenAI from 'openai';
 import AppwriteConf from "@/appwriteConfigrationKeys/ConfigrationofAppwrite";
 
 /**
@@ -11,87 +11,91 @@ import AppwriteConf from "@/appwriteConfigrationKeys/ConfigrationofAppwrite";
 class AIService {
 
     constructor() {
-        this.invokeUrl =
-            "/api/nvidia/v1/chat/completions";
-
-        this.headers = {
-            Authorization: `Bearer ${AppwriteConf.nvidiaApiKey}`,
-            "Content-Type": "application/json"
-        };
+        this.openai = new OpenAI({
+            apiKey: AppwriteConf.nvidiaApiKey,
+            baseURL: `${window.location.origin}/api/nvidia/v1`,
+            dangerouslyAllowBrowser: true,
+        });
     }
 
     /**
      * Standardized AI request
      * @param {string} prompt
-     * @param {Function|null} onChunk
+     * @param {Function|null} onChunk  - streaming callback(fullText, newChunk)
+     * @param {boolean} jsonMode       - force JSON output format
+     * @param {AbortSignal|null} signal - cancellation signal
+     * @param {string|null} systemPrompt - override default system prompt
      */
 
-    async sendMessage(prompt, onChunk = null, jsonMode = false, signal = null, systemPrompt = null) {
 
+    async sendMessage(prompt, onChunk = null, jsonMode = false, signal = null, systemPrompt = null, task = null) {
+
+        const config = {
+            chat: {
+                max_tokens: 1200,
+                temperature: 0.3,
+            },
+
+            note: {
+                max_tokens: 1800,
+                temperature: 0.2,
+            },
+
+            summarize: {
+                max_tokens: 1000,
+                temperature: 0.2,
+            },
+
+            complex: {
+                max_tokens: 4096,
+                temperature: 0.5,
+            },
+        };
+        const settings = config[task] || config["chat"];
         try {
-
-
             const messages = [
-
                 {
                     role: "system",
                     content: systemPrompt ||
                         `You are a helpful AI notes assistant.
 
-                            When the user explicitly asks you to create a note,
-                            output it using this exact syntax:
+When the user explicitly asks you to create a note,
+output it using this exact syntax:
 
-                            [CREATE_NOTE]
-                            {
-                            "title": "The Note Title",
-                            "content": "HTML formatted note content"
-                            }
-                            [/CREATE_NOTE]
+[CREATE_NOTE]
+{
+"title": "The Note Title",
+"content": "HTML formatted note content"
+}
+[/CREATE_NOTE]
 
-                            Rules:
-                            - No markdown code blocks
-                            - Keep notes clean and structured
-                            - Use proper HTML formatting
-                            - Be concise and readable`
+Rules:
+- No markdown code blocks
+- Keep notes clean and structured
+- Use proper HTML formatting
+- Be concise and readable`
                 },
-                {
-                    role: "user",
-                    content: prompt
-                }
+                { role: "user", content: prompt }
             ];
 
             const isStreaming = !!onChunk;
 
             /**
-             * NVIDIA API Payload
+             * NVIDIA API Payload (OpenAI-compatible format)
              */
 
-            const payload = {
-
-                // model: "google/gemma-3n-e2b-it",
-                // model: "google/gemma-4-31b-it", //i think is model is fast to first model and more advanced also
-                // model: "google/gemma-4-31b-it", //i think is the best model for this project it is fast and advanced
-                // model: "meta/llama-3.3-70b-instruct",
-                // model: "google/gemma-4-31b-it",
-                //  model="google/gemma-2-2b-it",
-                // model: "google/gemma-3n-e4b-it",
-                //  "model": "google/diffusiongemma-26b-a4b-it"
-                // model: "meta/llama-3.1-8b-instruct",google/gemma-3n-e4b-it
-                // model: "minimaxai/minimax-m2.7",
-                // model: "minimaxai/minimax-m3",
-                // model: "meta/llama-3.3-70b-instruct",
-                model: "google/gemma-3n-e2b-it",
+            const requestParams = {
+                model: "nvidia/nemotron-3-super-120b-a12b",
                 messages,
-                max_tokens: 2048,            // 4096 se kam — enough for notes, faster response
-                temperature: 0.6,            // 0.3 → 0.6: natural, detailed, but still factual
-                top_p: 0.9,                  // 0.95 → 0.9: focused, less randomness
-                frequency_penalty: 0.2,      // Naya: repeats se bachega
-                presence_penalty: 0.1,       // Naya: thoda variety aayega
+                max_tokens: settings.max_tokens || config["note"].max_tokens,
+                temperature: settings.temperature || config["note"].temperature,    // NVIDIA recommended for deepseek-v4-pro
+                top_p: 1,       // NVIDIA recommended for deepseek-v4-pro
+                // seed: 42,
                 stream: isStreaming,
             };
 
             if (jsonMode) {
-                payload.response_format = { type: "json_object" };
+                requestParams.response_format = { type: "json_object" };
             }
 
             /**
@@ -99,128 +103,66 @@ class AIService {
              */
 
             if (isStreaming) {
-                const response = await fetch(this.invokeUrl, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        ...this.headers,
-                        Accept: "text/event-stream"
-                    },
-                    body: JSON.stringify(payload),
-                    signal
-                });
 
-                if (!response.ok) {
-                    const errText = await response.text();
-                    throw new Error(`AI service error: ${response.status} - ${errText}`);
-                }
+                const stream = await this.openai.chat.completions.create(
+                    requestParams,
+                    { signal }
+                );
 
-                if (!response.body) {
-                    throw new Error("Response body is empty");
-                }
-
-                const decoder = new TextDecoder("utf-8");
                 let fullText = "";
                 let buffer = "";
+                let lastUpdate = 0;
 
-                for await (const chunk of response.body) {
-                    buffer += decoder.decode(chunk, { stream: true });
-                    const lines = buffer.split("\n");
-                    buffer = lines.pop() || "";
+                for await (const chunk of stream) {
+                    const content = chunk.choices[0]?.delta?.content || "";
+                    if (!content) continue;
+                    fullText += content;
+                    buffer += content;
+                    const now = performance.now();
 
-                    for (const line of lines) {
-                        const trimmedLine = line.trim();
-                        if (!trimmedLine) continue;
-
-                        if (trimmedLine.startsWith("data:")) {
-                            const jsonStr = trimmedLine.replace("data:", "").trim();
-                            if (jsonStr === "[DONE]") {
-                                continue;
-                            }
-
-                            try {
-                                const parsed = JSON.parse(jsonStr);
-                                const content = parsed?.choices?.[0]?.delta?.content || "";
-                                if (content) {
-                                    fullText += content;
-                                    onChunk(fullText, content);
-                                }
-                            } catch (err) {
-                                console.error("Stream parse error:", err);
-                            }
-                        }
+                    if (now - lastUpdate > 50) {
+                        onChunk(fullText, buffer);
+                        buffer = "";
+                        lastUpdate = now;
                     }
                 }
-
-                if (buffer.trim()) {
-                    const trimmedLine = buffer.trim();
-                    if (trimmedLine.startsWith("data:")) {
-                        const jsonStr = trimmedLine.replace("data:", "").trim();
-                        if (jsonStr !== "[DONE]") {
-                            try {
-                                const parsed = JSON.parse(jsonStr);
-                                const content = parsed?.choices?.[0]?.delta?.content || "";
-                                if (content) {
-                                    fullText += content;
-                                    onChunk(fullText, content);
-                                }
-                            } catch (err) {
-                                // Ignore
-                            }
-                        }
-                    }
+                if (buffer) {
+                    onChunk(fullText, buffer);
                 }
 
                 return fullText;
             }
 
             /**
-             * NORMAL RESPONSE
+             * NORMAL RESPONSE (non-streaming)
              */
             else {
 
-                const response = await axios.post(
-                    this.invokeUrl,
-                    payload,
-                    {
-                        headers: {
-                            ...this.headers,
-                            Accept: "application/json"
-                        },
-                        signal
-                    }
+                const completion = await this.openai.chat.completions.create(
+                    requestParams,
+                    { signal }
                 );
-
-                return (
-                    response.data
-                        ?.choices?.[0]
-                        ?.message?.content || ""
-                );
+                return completion.choices[0]?.message?.content || "";
             }
-
         } catch (error) {
 
-            if (axios.isCancel(error)) {
+            // Handle AbortController / OpenAI SDK cancellation
+            if (
+                error?.name === "AbortError" ||
+                error?.name === "APIUserAbortError" ||
+                error?.code === "ERR_CANCELED"
+            ) {
                 const cancelError = new Error("canceled");
                 cancelError.name = "CanceledError";
                 cancelError.code = "ERR_CANCELED";
                 throw cancelError;
             }
+            console.log(error)
+            console.error("AI Service Error:", error?.message || error);
 
-            console.error(
-                "AI Service Error:",
-                error?.response?.data || error.message
-            );
-
-            let status = error?.response?.status;
-            let originalMsg = error.message || "";
-
-            if (!status && originalMsg.startsWith("AI service error:")) {
-                const match = originalMsg.match(/AI service error:\s*(\d+)/);
-                if (match) {
-                    status = parseInt(match[1], 10);
-                }
-            }
+            // OpenAI SDK exposes status directly on the error object
+            let status = error?.status;
+            let originalMsg = error?.message || "";
 
             let cleanMsg = "Failed to communicate with AI.";
             if (status) {
@@ -240,9 +182,7 @@ class AIService {
             }
 
             const cleanError = new Error(cleanMsg);
-            if (status) {
-                cleanError.status = status;
-            }
+            if (status) cleanError.status = status;
             throw cleanError;
         }
     }
@@ -255,13 +195,13 @@ const aiService = new AIService();
  * Entire app uses this function only
  */
 
-export const generateAIResponse = (prompt, onChunk, jsonMode = false, signal = null, systemPrompt = null) => {
-
+export const generateAIResponse = (prompt, onChunk, jsonMode = false, signal = null, systemPrompt = null, task = null,) => {
     return aiService.sendMessage(
         prompt,
         onChunk,
         jsonMode,
         signal,
-        systemPrompt
+        systemPrompt,
+        task
     );
 };

@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React from "react";
 import { ArrowCircleUpIcon } from "@phosphor-icons/react";
 import { useForm } from "react-hook-form"
 import { sendMessageToAI } from "@/AiAssistancefiles/Aimethods/AiassistentLogic";
@@ -35,7 +35,7 @@ function Aichatbox({ editor, onClose, setLoading, setStatus, setTitle, commitTit
         setValue,
     } = useForm()
 
-    const quickaichat = async (data) => {
+    const quickaichat = async () => {
         if (watch("aiquickchat").trim() !== '') {
             const topic = watch("aiquickchat").trim();
 
@@ -301,17 +301,16 @@ The JSON must be valid, complete, and parseable. Do NOT truncate or leave it unf
                         />
 
 
-                        <button
-                            type="submit"
+                        <button type="submit"
                             className="
-                        p-3
-                        rounded-NPMxl
-                        text-sm
-                        font-medium
-                        transition
-                        cursor-pointer
-                        text-primary
-                        "
+                                        p-3
+                                        rounded-NPMxl
+                                        text-sm
+                                        font-medium
+                                        transition
+                                        cursor-pointer
+                                        text-primary
+                                        "
                             aria-label="Send message"
                         >
                             <ArrowCircleUpIcon size={30} weight="fill" />

@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { BarcodeIcon, FilePdfIcon } from '@phosphor-icons/react'
 import { useExportPDF } from "./Hooks/useExportPDF.jsx"
-import { showToast } from "../../utils/showToast";
-import { handleError } from "../../../../utils/errorHandler";
+import { showToast } from "../../utils/showToast.js";
+import { handleError } from "../../../../utils/errorHandler.js";
 import { useSelector } from "react-redux";
 import userAuthService from "../../../../AppWrite/auth.js"
-import AppwriteConfig from "../../../../appwriteConfigrationKeys/ConfigrationofAppwrite";
+import AppwriteConfig from "../../../../appwriteConfigrationKeys/ConfigrationofAppwrite.js";
 
 
 export function CustomDropdown({ editor }) {
@@ -87,11 +87,13 @@ export function CustomDropdown({ editor }) {
             ),
             action: isExtracting ? null : () => {
                 setIsOpen(false);
+                console.log(fileInputRef.current.click());
                 fileInputRef.current.click();
             }
         },
         {
-            label: "Export PDF", icon: <FilePdfIcon size={19} className="text-purple-300" />, action: () => {
+            label: "Export PDF", icon: <FilePdfIcon size={19} className="text-purple-300" />,
+            action: () => {
                 const text = editor.getText().trim();
                 if (!text) {
                     showToast("warning", "Note is empty to make PDF");
@@ -114,7 +116,7 @@ export function CustomDropdown({ editor }) {
     }, []);
 
     return (
-        <div className="relative list-items !z-[999]" ref={dropdownRef}>
+        <div className="relative list-items z-999!" ref={dropdownRef}>
 
             {/* Hidden Input Tag */}
             <input
@@ -139,7 +141,7 @@ export function CustomDropdown({ editor }) {
 
             {isOpen && (
                 <div
-                    className="absolute right-0 mt-2 w-56 border border-foreground/10 bg-background/95 backdrop-blur-md rounded-2xl shadow-2xl py-2 z-[100] animate-in fade-in zoom-in duration-200"
+                    className="absolute right-0 mt-2 w-56 border border-foreground/10 bg-background/95 backdrop-blur-md rounded-2xl shadow-2xl py-2 z-100 animate-in fade-in zoom-in duration-200"
                     style={{
                         background: `
                             radial-gradient(ellipse at top left, rgba(59,130,246,0.18) 0%, transparent 65%),

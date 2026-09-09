@@ -100,35 +100,6 @@ export function useTiptapEditor({
         }
       }
     },
-    /*
-    Trajectory ID: 038b0719-86c3-4241-a29b-cedb5a51add8
-Error: HTTP 503 Service Unavailable
-Sherlog: 
-TraceID: 0x893856c48e9fcc97
-Headers: {"Alt-Svc":["h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"],"Content-Length":["518"],"Content-Type":["text/event-stream"],"Date":["Mon, 22 Jun 2026 12:08:51 GMT"],"Server":["ESF"],"Server-Timing":["gfet4t7; dur=2136"],"Vary":["Origin","X-Origin","Referer"],"X-Cloudaicompanion-Trace-Id":["893856c48e9fcc97"],"X-Content-Type-Options":["nosniff"],"X-Frame-Options":["SAMEORIGIN"],"X-Xss-Protection":["0"]}
-
-{
-  "error": {
-    "code": 503,
-    "details": [
-      {
-        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
-        "domain": "cloudcode-pa.googleapis.com",
-        "metadata": {
-          "model": "gemini-pro-agent"
-        },
-        "reason": "MODEL_CAPACITY_EXHAUSTED"
-      },
-      {
-        "@type": "type.googleapis.com/google.rpc.RetryInfo",
-        "retryDelay": "9s"
-      }
-    ],
-    "message": "No capacity available for model gemini-pro-agent on the server",
-    "status": "UNAVAILABLE"
-  }
-}
-     */
     editorProps: {
       attributes: { class: "min-h-[60vh] outline-none focus:outline-none leading-relaxed" },
       handleKeyDown,

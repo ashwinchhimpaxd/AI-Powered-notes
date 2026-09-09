@@ -25,7 +25,6 @@ export const sendMessageToAI = async (usermessage, chatHistoryOrOnChunk = [], on
         }
         // We pass this directly to the abstraction layer (without history parameter)
         const responseText = await generateAIResponse(usermessage, onChunk, jsonMode, null, finalSystemPrompt);
-
         return responseText;
 
     } catch (error) {

@@ -15,38 +15,6 @@ export class UserAuthentication {
         this.functions = new Functions(this.client)
     }
 
-    // // 1. otp Based Account Creation
-    // async createUserAccount({ email, password, name }) {
-    //     try {
-    //         const userAccount = await this.account.create(
-    //             ID.unique(),
-    //             email,
-    //             password,
-    //             name
-    //         );
-    //         if (userAccount) {
-    //             return this.login({ email, password });
-    //         }
-    //         return userAccount;
-    //     } catch (error) {
-    //         console.error("Appwrite service :: createUserAccount :: error", error);
-    //         throw error;
-    //     }
-    // }
-
-    // // 2. Email/Password Login
-    // async login({ email, password }) {
-    //     try {
-    //         return await this.account.createEmailPasswordSession(email, password);
-    //     } catch (error) {
-    //         console.error("Appwrite service :: login :: error", error);
-    //         throw error;
-    //     }
-    // }
-
-    // 3. PHASE 1: Send OTP to Email (2025 Standard)
-    // Magic URL ki jagah Email Token use karein agar 6-digit code chahiye
-
     // send otp to user email
     async sendOtp(email) {
         try {
@@ -54,12 +22,14 @@ export class UserAuthentication {
             const sessiontoken = await this.account.createEmailToken(
                 ID.unique(),
                 email,
-                true // Add this param to send a 6-digit phrase instead of magic URL
+                false // false = sends a short OTP code to email (not a phrase)
             );
 
             if (!sessiontoken) return;
-            this.userid = sessiontoken.userId; // Login ke liye userId ko frontend state mein save karna hoga
-            return sessiontoken;
+            return {
+                userId: sessiontoken.userId,
+                email
+            };
         } catch (error) {
             console.error("Appwrite service :: sendOtp :: error", error);
             throw error;
@@ -69,12 +39,12 @@ export class UserAuthentication {
     }
 
     // 4. PHASE 2: Verify OTP and Login
-    async verifyOtp(otp, userName) {
+    async verifyOtp(userId, otp, userName) {
         try {
             // secret hi woh 6-digit OTP hai jo user enter karega
-            const usersession = await this.account.createSession(this.userid, otp);
+            const usersession = await this.account.createSession(userId, otp);
             if (userName) {
-                this.UpdateUserName(userName).then(() => console.log("username updated successfuly")).catch((err) => console.error(err))
+                await this.UpdateUserName(userName)
             }
             return usersession;
         } catch (error) {
@@ -146,7 +116,6 @@ export class UserAuthentication {
     async logoutFromAlldevices() {
         try {
             await this.account.deleteSessions('all');
-            this.userid = null;
             return true;
         } catch (error) {
             console.error("Appwrite service :: logout From All devices :: error", error);
@@ -158,7 +127,6 @@ export class UserAuthentication {
     async logoutFromCurrentdevice() {
         try {
             await this.account.deleteSession('current');
-            this.userid = null;
             return true;
         } catch (error) {
             console.error("Appwrite service :: logout From Current device :: error", error);
@@ -174,12 +142,9 @@ export class UserAuthentication {
                 JSON.stringify(payload)
             );
 
-            // Debugging line
-            console.log("Raw Execution Response:", execution.responseBody);
 
             if (!execution.responseBody) {
-                console.log("empty response")
-                // throw new Error("Function returned empty response!");
+                throw new Error("Function returned empty response!");
             }
             return JSON.parse(execution.responseBody);
         } catch (error) {

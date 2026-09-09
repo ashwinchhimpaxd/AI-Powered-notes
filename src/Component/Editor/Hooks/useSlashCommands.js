@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { AI_COMMANDS } from "../constants/aiCommands.jsx";
+import { AI_COMMANDS } from "../constants/aiCommands";
 import { runAiCommand, cleanHtmlResponse } from "../services/ai.service.js";
 import { showToast } from "../utils/showToast.js";
 
@@ -54,11 +54,8 @@ export function useSlashCommands() {
   // ── Filtered commands ──────────────────────────────────────────────────
   const filteredCommands = slashQuery
     ? AI_COMMANDS.filter(
-      (cmd) =>
-        cmd.label.toLowerCase().includes(slashQuery.toLowerCase()) ||
-        cmd.description.toLowerCase().includes(slashQuery.toLowerCase())
-    )
-    : AI_COMMANDS;
+      (cmd) => cmd.label.toLowerCase().includes(slashQuery.toLowerCase()) || cmd.description.toLowerCase().includes(slashQuery.toLowerCase())
+    ): AI_COMMANDS;
 
   // Close automatically when no commands match (e.g. user typed "/xyzabc")
   useEffect(() => {
@@ -109,7 +106,8 @@ export function useSlashCommands() {
             editor.commands.setContent(originalHtml + headerHtml + parsedHtml);
           }
           editor.commands.focus("end");
-        }
+        },
+        cmd.task
       );
     } catch (err) {
       console.error("AI command error:", err);

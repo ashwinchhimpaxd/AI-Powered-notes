@@ -38,7 +38,7 @@ Examples:
 Use semantic HTML:
 <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>
 
-Return only valid JSON.`;
+Return only valid HTML. No JSON. No markdown. No code blocks.`;
 
 export function cleanHtmlResponse(text) {
   if (!text) return "";
@@ -52,34 +52,30 @@ export function cleanHtmlResponse(text) {
   return clean;
 }
 
-export async function runAiCommand(commandId, commandLabel, commandMode, noteText, onChunk = null) {
+export async function runAiCommand(commandId, commandLabel, commandMode, noteText, onChunk = null, task = null) {
   const prompt = buildPrompt(commandId, noteText);
 
   if (onChunk) {
     const resultText = await generateAIResponse(
       prompt,
       (fullText) => {
-        // Strip markdown wrappers first, then convert any plain-text
-        // bullet characters (• / -) to proper <ul><li> HTML so Tiptap
-        // renders real list items instead of a single paragraph.
         const stripped = cleanHtmlResponse(fullText);
         const parsed = parseAiResponse(stripped);
-        // If parseAiResponse produced list markup, use it;
-        // otherwise fall back to the stripped HTML (already valid HTML).
         onChunk(parsed || stripped);
       },
       false,
       null,
-      EDITOR_SYSTEM_PROMPT
+      EDITOR_SYSTEM_PROMPT,
+      task
     );
     return cleanHtmlResponse(resultText);
   } else {
-    const resultText = await generateAIResponse(prompt, null, false, null, EDITOR_SYSTEM_PROMPT);
+    const resultText = await generateAIResponse(prompt, null, false, null, EDITOR_SYSTEM_PROMPT, task);
     const bodyHtml = cleanHtmlResponse(resultText);
 
     if (commandMode === "replace") {
       // Clean content — no header, replaces the whole note
-      return `${bodyHtml}<p></p>`;
+      return `<p>${bodyHtml}</p>`;
     }
 
     // Append mode — include labelled header to separate from existing content

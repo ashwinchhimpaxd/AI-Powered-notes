@@ -1,5 +1,5 @@
 // src/AppWrite/config.js
-import { Client, Databases, Query, ID, Permission, Role } from "appwrite"; // Yaha pe aapka keys ka path
+import { Client, Databases, ID, Permission, Role } from "appwrite"; // Yaha pe aapka keys ka path
 import AppwriteConf from "@/appwriteConfigrationKeys/ConfigrationofAppwrite";
 
 

@@ -2,7 +2,7 @@ import { memo, useMemo, useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { FileText, Bookmark, ShareNetwork, DotsThreeVertical } from "@phosphor-icons/react";
 import { selectNoteById } from "../../../redux/NotesCreation/NotesCreationSlice.js";
-import { useExportPDF } from '../../Editor/Editorcomponents/DropDownMenu/Hooks/useExportPDF.jsx';
+import { useExportPDF } from '../../Editor/Components/DropDownMenu/Hooks/useExportPDF.jsx';
 
 
 // note ko pdf me convert karne ke liye 

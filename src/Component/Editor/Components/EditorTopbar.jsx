@@ -1,7 +1,7 @@
 import React, { memo, useState, useEffect, useRef } from "react";
 import { Sparkle, FloppyDisk, CircleNotch, ChatTeardropText } from "@phosphor-icons/react";
 import { CustomDropdown } from "./DropDownMenu/DrowdownmenuWrapper";
-import TestAiAppwriteSDK from "../../Testing-components/TestAiAppwriteSDK"
+// import TestAiAppwriteSDK from "../../Testing-components/TestAiAppwriteSDK" // file does not exist — kept for reference only
 /**
  * Fixed top bar: title (click-to-edit), summary, export, and save buttons.
  *
@@ -31,6 +31,12 @@ const EditorTopbar = memo(function EditorTopbar({ title, setTitle, commitTitle, 
     const handleScroll = (event) => {
       const target = event.target;
       if (!target) return;
+
+      // ── Ignore scrolls inside the slash command menu ──────────────────
+      // SlashCommandMenu's list div has data-slash-menu attribute.
+      // capture:true catches all scroll events, so we must explicitly skip
+      // any event whose source is inside that menu to avoid hiding the toolbar.
+      if (target instanceof Element && target.closest("[data-slash-menu]")) return;
 
       // Determine scroll position based on scroll target (window vs custom scrollable elements)
       const currentScrollY = target === document
@@ -79,10 +85,10 @@ const EditorTopbar = memo(function EditorTopbar({ title, setTitle, commitTitle, 
           <h2
             onClick={() => setIsEditing(true)}
             onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setIsEditing(true);
-                }
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setIsEditing(true);
+              }
             }}
             role="button"
             tabIndex={0}
@@ -115,7 +121,7 @@ const EditorTopbar = memo(function EditorTopbar({ title, setTitle, commitTitle, 
       </div>
 
       {/* Actions */}
-      <div className="flex items-center h-fit gap-2 flex-shrink-0  relative">
+      <div className="flex items-center h-fit gap-2 shrink-0  relative">
 
         <div className="flex gap-2 flex-1  ">
           {/* ai chat button  */}
@@ -141,7 +147,7 @@ const EditorTopbar = memo(function EditorTopbar({ title, setTitle, commitTitle, 
           type="button"
           onClick={onSave}
           disabled={isSaving || isNoteSaved}
-          className={`flex lg:w-[100px] justify-center   items-center gap-1 p-2 rounded-full text-sm font-medium border transition-all cursor-pointer ${isNoteSaved
+          className={`flex lg:w-25 justify-center   items-center gap-1 p-2 rounded-full text-sm font-medium border transition-all cursor-pointer ${isNoteSaved
             ? "bg-card/55 border-border text-foreground/45 cursor-default"
             : "bg-primary text-primary-foreground border-primary hover:bg-primary/90 hover:border-primary/90 shadow-lg"
             }`}

@@ -5,9 +5,8 @@
  * @returns {string} the full prompt to send to Gemini
  */
 export function buildPrompt(commandId, noteText) {
-  const t = (noteText || "(empty note)")
-    .replace(/<img[^>]*>/gi, "")  // ← add this
-    .trim().slice(0, 3000);
+
+  const t = (noteText || "(empty note)").replace(/<img[^>]*>/gi, "").trim().slice(0, 3000);
 
   const map = {
     improve: `Improve the writing clarity and flow of the following text. Return ONLY the improved text:\n\n${t}`,

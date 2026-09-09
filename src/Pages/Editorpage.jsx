@@ -6,7 +6,7 @@ import { CircleNotch } from '@phosphor-icons/react';
 
 import AntigravityEditor from '../Component/Editor/AntigravityEditor';
 import service from '../AppWrite/Setgetuserdatas/config.js';
-import { setnoteid, setcurrentnoteinfo, resetcurrentnoteinfo } from '../redux/currentnoteinfoslice/currentnoteinfoslice.js';
+import { setnoteid, setcurrentnoteinfo } from '../redux/currentnoteinfoslice/currentnoteinfoslice.js';
 import { selectAllNotes } from '../redux/NotesCreation/NotesCreationSlice.js';
 
 function Editorpage() {
@@ -125,7 +125,7 @@ function Editorpage() {
     }
 
     return (
-        <div className="flex flex-col w-full h-[100vh]">
+        <div className="flex flex-col w-full h-screen">
             <div className="w-full h-full flex flex-col">
                 <AntigravityEditor onEditorReady={seteditorInstance} />
             </div>

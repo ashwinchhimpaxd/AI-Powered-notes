@@ -20,6 +20,7 @@ const LoginUsingOTP = () => {
     const { register, handleSubmit, getValues, trigger, setError, formState: { errors, isSubmitting } } = formMethods;
 
     const [cooldown, setCooldown] = useState(0);
+    const [otpUserId, setOtpUserId] = useState(null);
 
     useEffect(() => {
         if (cooldown <= 0) return;
@@ -27,20 +28,8 @@ const LoginUsingOTP = () => {
             setCooldown((prev) => prev - 1);
         }, 1000);
         return () => clearInterval(timer);
-    }, [
-        
-    ]);
+    }, [cooldown]);
 
-
-    const handleSendOTPClick = useCallback(
-        async () => {
-            if (cooldown > 0) return;
-            const success = await OnSendOtp();
-            if (success) {
-                setCooldown(60);
-            }
-        }
-    )
 
     const OnSendOtp = useCallback(async () => {
         const isValid = await trigger("Email");
@@ -48,8 +37,10 @@ const LoginUsingOTP = () => {
 
         const Email = getValues("Email");
         try {
-            let result = await userAuthService.sendOtp(Email);
-            console.log(result)
+            const otpData = await userAuthService.sendOtp(Email);
+            if (otpData) {
+                setOtpUserId(otpData.userId);
+            }
             showToast("success", "OTP sent successfully");
             return true;
         } catch (error) {
@@ -58,19 +49,27 @@ const LoginUsingOTP = () => {
         }
     }, [trigger, getValues]); // Dependencies
 
+    const handleSendOTPClick = useCallback(
+        async () => {
+            if (cooldown > 0) return;
+            const success = await OnSendOtp();
+            if (success) {
+                setCooldown(60);
+            }
+        },
+        [cooldown, OnSendOtp] // cooldown: guard check ke liye, OnSendOtp: function reference
+    )
     const onSubmit = async (data) => {
         try {
             const currentUser = await userAuthService.getCurrentUser();
-            console.log(currentUser)
+
             if (currentUser) {
-                console.log("User already logged in. Syncing state...");
                 dispatch(login({ UserData: { userdetaild: currentUser } }));
                 navigate("/Dashboard");
                 return;
             }
 
-            const Userlogin = await userAuthService.verifyOtp(String(data.OTP), "");
-            console.log(Userlogin)
+            const Userlogin = await userAuthService.verifyOtp(otpUserId, String(data.OTP), "");
             if (Userlogin) {
                 // Fetch actual User object to have correct user details and user $id
                 const currentUser = await userAuthService.getCurrentUser();
@@ -78,7 +77,6 @@ const LoginUsingOTP = () => {
                 navigate("/Dashboard");
             }
         } catch (error) {
-            console.error(error.message);
             setError("OTP", {
                 type: "manual",
                 message: "Invalid OTP. Please check and try again."
@@ -96,7 +94,7 @@ const LoginUsingOTP = () => {
 
             {/* Main Form Container */}
             <div className="flex-1 flex flex-col items-center justify-center w-full px-4 py-3">
-                <div className="bg-[#121212] border border-[#262626] rounded-xl w-full max-w-[420px] p-8  shadow-2xl">
+                <div className="bg-[#121212] border border-[#262626] rounded-xl w-full max-w-105 p-8  shadow-2xl">
 
                     <h2 className="text-2xl font-semibold mb-1 text-white">Welcome back</h2>
                     <p className="text-[#a1a1aa] text-sm mb-8">Enter your details to continue.</p>

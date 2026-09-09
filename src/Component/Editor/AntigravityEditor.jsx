@@ -7,12 +7,12 @@ import { useTiptapEditor } from "./Hooks/useTiptapEditor.js";
 import { useNoteSave } from "./DataSetterMethodonappwrite/Usenotesave.js";
 
 // ── UI Components ──────────────────────────────────────────────────────────
-import EditorTopbar from "./Editorcomponents/EditorTopbar.jsx";
-import EditorCanvas from "./Editorcomponents/EditorCanvas.jsx";
-import SlashCommandMenu from "./Editorcomponents/SlashCommandMenu.jsx";
-import AiLoadingOverlay from "./Editorcomponents/AiLoadingOverlay.jsx";
-import SummaryPanel from "./Editorcomponents/SummaryPanel.jsx";
-import Aichatbox from "./Editorcomponents/Aichatbox.jsx";
+import EditorTopbar from "./Components/EditorTopbar.jsx";
+import EditorCanvas from "./Components/EditorCanvas.jsx";
+import SlashCommandMenu from "./Components/SlashCommandMenu.jsx";
+import AiLoadingOverlay from "./Components/AiLoadingOverlay.jsx";
+import SummaryPanel from "./Components/SummaryPanel.jsx";
+import Aichatbox from "./Components/Aichatbox.jsx";
 /**
  * AntigravityEditor — clean orchestrator.
  *
