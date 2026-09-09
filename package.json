@@ -24,6 +24,7 @@
     "@tiptap/pm": "^3.0.7",
     "@tiptap/react": "^3.0.7",
     "@tiptap/starter-kit": "^3.0.7",
+    "@vercel/speed-insights": "^2.0.0",
     "appwrite": "^17.0.0",
     "axios": "^1.16.1",
     "clsx": "^2.1.1",
