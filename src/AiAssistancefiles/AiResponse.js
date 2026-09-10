@@ -10,7 +10,7 @@
 class AIService {
 
     constructor() {
-        this.baseURL = `${window.location.origin}/api/nvidia/v1`;
+        this.baseURL = `${window.location.origin}/api/nvidia`;
     }
 
     async sendMessage(
@@ -96,7 +96,7 @@ Rules:
             }
 
             const response = await fetch(
-                `${this.baseURL}/chat/completions`,
+                this.baseURL,
                 {
                     method: "POST",
 

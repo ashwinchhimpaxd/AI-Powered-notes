@@ -8,28 +8,19 @@ export default async function handler(req, res) {
             });
         }
 
-        const path = req.query.path;
+        const response = await fetch(
+            "https://integrate.api.nvidia.com/v1/chat/completions",
+            {
+                method: "POST",
 
-        const nvidiaPath = Array.isArray(path)
-            ? path.join("/")
-            : path || "";
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${apiKey}`,
+                },
 
-        const nvidiaUrl =
-            `https://integrate.api.nvidia.com/v1/${nvidiaPath}`;
-
-        const response = await fetch(nvidiaUrl, {
-            method: req.method,
-
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${apiKey}`,
-            },
-
-            body:
-                req.method === "GET" || req.method === "HEAD"
-                    ? undefined
-                    : JSON.stringify(req.body),
-        });
+                body: JSON.stringify(req.body),
+            }
+        );
 
         res.status(response.status);
 
@@ -51,7 +42,6 @@ export default async function handler(req, res) {
             const reader = response.body.getReader();
 
             while (true) {
-
                 const { done, value } =
                     await reader.read();
 
@@ -70,10 +60,7 @@ export default async function handler(req, res) {
 
     } catch (error) {
 
-        console.error(
-            "NVIDIA Proxy Error:",
-            error
-        );
+        console.error("NVIDIA Proxy Error:", error);
 
         return res.status(500).json({
             error: "Failed to communicate with NVIDIA API"
