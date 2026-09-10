@@ -1,34 +1,26 @@
-import OpenAI from 'openai';
-import AppwriteConf from "@/appwriteConfigrationKeys/ConfigrationofAppwrite";
-
 /**
  * CENTRALIZED AI SERVICE
  * All AI-related features use this layer.
- * If changing provider/model later,
- * only modify this file.
+ *
+ * Browser -> Vercel API -> NVIDIA
+ *
+ * NVIDIA API key NEVER comes to browser.
  */
 
 class AIService {
 
     constructor() {
-        this.openai = new OpenAI({
-            apiKey: AppwriteConf.nvidiaApiKey,
-            baseURL: `${window.location.origin}/api/nvidia/v1`,
-            dangerouslyAllowBrowser: true,
-        });
+        this.baseURL = `${window.location.origin}/api/nvidia/v1`;
     }
 
-    /**
-     * Standardized AI request
-     * @param {string} prompt
-     * @param {Function|null} onChunk  - streaming callback(fullText, newChunk)
-     * @param {boolean} jsonMode       - force JSON output format
-     * @param {AbortSignal|null} signal - cancellation signal
-     * @param {string|null} systemPrompt - override default system prompt
-     */
-
-
-    async sendMessage(prompt, onChunk = null, jsonMode = false, signal = null, systemPrompt = null, task = null) {
+    async sendMessage(
+        prompt,
+        onChunk = null,
+        jsonMode = false,
+        signal = null,
+        systemPrompt = null,
+        task = null
+    ) {
 
         const config = {
             chat: {
@@ -51,12 +43,16 @@ class AIService {
                 temperature: 0.5,
             },
         };
-        const settings = config[task] || config["chat"];
+
+        const settings = config[task] || config.chat;
+
         try {
+
             const messages = [
                 {
                     role: "system",
-                    content: systemPrompt ||
+                    content:
+                        systemPrompt ||
                         `You are a helpful AI notes assistant.
 
 When the user explicitly asks you to create a note,
@@ -75,115 +71,212 @@ Rules:
 - Use proper HTML formatting
 - Be concise and readable`
                 },
-                { role: "user", content: prompt }
+
+                {
+                    role: "user",
+                    content: prompt
+                }
             ];
 
             const isStreaming = !!onChunk;
 
-            /**
-             * NVIDIA API Payload (OpenAI-compatible format)
-             */
-
             const requestParams = {
                 model: "nvidia/nemotron-3-super-120b-a12b",
                 messages,
-                max_tokens: settings.max_tokens || config["note"].max_tokens,
-                temperature: settings.temperature || config["note"].temperature,    // NVIDIA recommended for deepseek-v4-pro
-                top_p: 1,       // NVIDIA recommended for deepseek-v4-pro
-                // seed: 42,
+                max_tokens: settings.max_tokens,
+                temperature: settings.temperature,
+                top_p: 1,
                 stream: isStreaming,
             };
 
             if (jsonMode) {
-                requestParams.response_format = { type: "json_object" };
+                requestParams.response_format = {
+                    type: "json_object"
+                };
             }
 
-            /**
-             * STREAMING RESPONSE
-             */
+            const response = await fetch(
+                `${this.baseURL}/chat/completions`,
+                {
+                    method: "POST",
 
-            if (isStreaming) {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
 
-                const stream = await this.openai.chat.completions.create(
-                    requestParams,
-                    { signal }
+                    body: JSON.stringify(requestParams),
+
+                    signal,
+                }
+            );
+
+            if (!response.ok) {
+
+                let errorData;
+
+                try {
+                    errorData = await response.json();
+                } catch {
+                    errorData = null;
+                }
+
+                const status = response.status;
+
+                console.error(
+                    "NVIDIA API Error:",
+                    errorData
                 );
 
-                let fullText = "";
-                let buffer = "";
-                let lastUpdate = 0;
+                let cleanMsg =
+                    "Failed to communicate with AI.";
 
-                for await (const chunk of stream) {
-                    const content = chunk.choices[0]?.delta?.content || "";
-                    if (!content) continue;
-                    fullText += content;
-                    buffer += content;
-                    const now = performance.now();
+                if (status === 400) {
+                    cleanMsg =
+                        "Invalid request to AI service.";
+                }
+                else if (status === 401) {
+                    cleanMsg =
+                        "Authentication failed. Please verify your AI API key.";
+                }
+                else if (status === 429) {
+                    cleanMsg =
+                        "AI rate limit reached. Please wait a moment and try again.";
+                }
+                else if (status >= 500) {
+                    cleanMsg =
+                        "AI service is temporarily unavailable. Please try again later.";
+                }
 
-                    if (now - lastUpdate > 50) {
-                        onChunk(fullText, buffer);
-                        buffer = "";
-                        lastUpdate = now;
+                const error = new Error(cleanMsg);
+                error.status = status;
+
+                throw error;
+            }
+
+            // ============================================
+            // NORMAL RESPONSE
+            // ============================================
+
+            if (!isStreaming) {
+
+                const data = await response.json();
+
+                return (
+                    data.choices?.[0]?.message?.content ||
+                    ""
+                );
+            }
+
+            // ============================================
+            // STREAMING RESPONSE
+            // ============================================
+
+            const reader = response.body.getReader();
+
+            const decoder = new TextDecoder();
+
+            let fullText = "";
+            let buffer = "";
+            let lastUpdate = 0;
+
+            while (true) {
+
+                const { done, value } =
+                    await reader.read();
+
+                if (done) break;
+
+                buffer += decoder.decode(
+                    value,
+                    { stream: true }
+                );
+
+                const lines = buffer.split("\n");
+
+                buffer = lines.pop() || "";
+
+                for (const line of lines) {
+
+                    const trimmed = line.trim();
+
+                    if (!trimmed) continue;
+
+                    if (!trimmed.startsWith("data:")) {
+                        continue;
+                    }
+
+                    const data =
+                        trimmed.slice(5).trim();
+
+                    if (data === "[DONE]") {
+                        continue;
+                    }
+
+                    try {
+
+                        const parsed =
+                            JSON.parse(data);
+
+                        const content =
+                            parsed.choices?.[0]
+                                ?.delta?.content || "";
+
+                        if (!content) continue;
+
+                        fullText += content;
+
+                        const now = performance.now();
+
+                        if (now - lastUpdate > 50) {
+
+                            onChunk(
+                                fullText,
+                                content
+                            );
+
+                            lastUpdate = now;
+                        }
+
+                    } catch (error) {
+
+                        console.warn(
+                            "Stream chunk parse error:",
+                            data
+                        );
                     }
                 }
-                if (buffer) {
-                    onChunk(fullText, buffer);
-                }
-
-                return fullText;
             }
 
-            /**
-             * NORMAL RESPONSE (non-streaming)
-             */
-            else {
-
-                const completion = await this.openai.chat.completions.create(
-                    requestParams,
-                    { signal }
-                );
-                return completion.choices[0]?.message?.content || "";
+            if (fullText) {
+                onChunk(fullText, "");
             }
+
+            return fullText;
+
         } catch (error) {
 
-            // Handle AbortController / OpenAI SDK cancellation
             if (
-                error?.name === "AbortError" ||
-                error?.name === "APIUserAbortError" ||
-                error?.code === "ERR_CANCELED"
+                error?.name === "AbortError"
             ) {
-                const cancelError = new Error("canceled");
-                cancelError.name = "CanceledError";
-                cancelError.code = "ERR_CANCELED";
+
+                const cancelError =
+                    new Error("canceled");
+
+                cancelError.name =
+                    "CanceledError";
+
+                cancelError.code =
+                    "ERR_CANCELED";
+
                 throw cancelError;
             }
-            console.log(error)
-            console.error("AI Service Error:", error?.message || error);
 
-            // OpenAI SDK exposes status directly on the error object
-            let status = error?.status;
-            let originalMsg = error?.message || "";
+            console.error(
+                "AI Service Error:",
+                error
+            );
 
-            let cleanMsg = "Failed to communicate with AI.";
-            if (status) {
-                if (status === 400) {
-                    cleanMsg = "Invalid request to AI service.";
-                } else if (status === 401) {
-                    cleanMsg = "Authentication failed. Please verify your AI API key.";
-                } else if (status === 429) {
-                    cleanMsg = "AI rate limit reached. Please wait a moment and try again.";
-                } else if (status >= 500) {
-                    cleanMsg = "AI service is temporarily unavailable. Please try again later.";
-                }
-            } else {
-                if (originalMsg.toLowerCase().includes("network")) {
-                    cleanMsg = "Network error. Check your internet connection.";
-                }
-            }
-
-            const cleanError = new Error(cleanMsg);
-            if (status) cleanError.status = status;
-            throw cleanError;
+            throw error;
         }
     }
 }
@@ -192,10 +285,17 @@ const aiService = new AIService();
 
 /**
  * Main Export
- * Entire app uses this function only
  */
 
-export const generateAIResponse = (prompt, onChunk, jsonMode = false, signal = null, systemPrompt = null, task = null,) => {
+export const generateAIResponse = (
+    prompt,
+    onChunk,
+    jsonMode = false,
+    signal = null,
+    systemPrompt = null,
+    task = null
+) => {
+
     return aiService.sendMessage(
         prompt,
         onChunk,
@@ -205,3 +305,5 @@ export const generateAIResponse = (prompt, onChunk, jsonMode = false, signal = n
         task
     );
 };
+
+export default aiService;
