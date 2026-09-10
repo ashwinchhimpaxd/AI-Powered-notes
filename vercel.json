@@ -1,8 +1,20 @@
 {
   "rewrites": [
     {
+<<<<<<< HEAD
+      "source": "/api/nvidia/(.*)",
+      "destination": "/api/nvidia"
+    },
+    {
+      "source": "/(.*)",
+=======
       "source": "/api/nvidia/v1/:path*",
       "destination": "https://integrate.api.nvidia.com/v1/:path*"
+    },
+    {
+      "source": "/((?!api/).*)",
+>>>>>>> 3314a5d76a77db1d1958793a0d22ecd368dffc11
+      "destination": "/index.html"
     }
   ]
 }
