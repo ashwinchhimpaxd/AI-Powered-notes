@@ -33,7 +33,7 @@ export function CustomDropdown({ editor }) {
                 });
             };
             const base64Data = await convertToBase64(file);
-            console.log(base64Data)
+
             const result = await userAuthService.triggerFunction(
                 '6a3d7a620000844f5f7c',
                 { action: "ScanDoc", file: base64Data, endpoint: AppwriteConfig.ocrendpoint }
@@ -87,9 +87,9 @@ export function CustomDropdown({ editor }) {
             ),
             action: isExtracting ? null : () => {
                 setIsOpen(false);
-                console.log(fileInputRef.current.click());
                 fileInputRef.current.click();
             }
+
         },
         {
             label: "Export PDF", icon: <FilePdfIcon size={19} className="text-purple-300" />,

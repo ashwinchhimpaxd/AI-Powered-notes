@@ -38,7 +38,6 @@ export class Service {
                 ]
             )
         } catch (error) {
-            console.log("Appwrite service :: createNote :: error", error);
             throw error;
         }
     }
@@ -59,7 +58,6 @@ export class Service {
                 }
             )
         } catch (error) {
-            console.log("Appwrite service :: updateNote :: error", error);
             throw error;
         }
     }
@@ -74,7 +72,6 @@ export class Service {
             )
             return true;
         } catch (error) {
-            console.log("Appwrite service :: deleteNote :: error", error);
             throw error;
         }
     }
@@ -88,7 +85,6 @@ export class Service {
                 noteuniqueid
             )
         } catch (error) {
-            console.log("Appwrite service :: getNote :: error", error);
             throw error;
         }
     }
@@ -102,7 +98,6 @@ export class Service {
                 queries
             )
         } catch (error) {
-            console.log("Appwrite service :: getNotes :: error", error);
             throw error;
         }
     }

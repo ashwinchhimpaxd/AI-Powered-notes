@@ -15,6 +15,8 @@ import FilterModal from "../filternote/FilterModal.jsx";
 import { fetchNotesThunk } from "../../../redux/NotesCreation/NotesCreationSlice.js";
 import NoteStatistics from "../../AIActivity.jsx";
 import NotesCreationForm from "../NotesCreationForm.jsx";
+import { showToast } from "../../Editor/utils/showToast.js";
+
 
 
 
@@ -141,19 +143,22 @@ const RecentNotes = memo((props) => {
                                 if (img.fileId) {
                                     await StorageService.deleteImage(img.fileId);
                                 }
-                            } catch (err) { }
+                            } catch (err) {
+                                showToast("warning", "Some note images could not be deleted.");
+                            }
                         })
                     );
                 }
                 await service.deleteNote(targetNoteId);
             } catch (error) {
                 console.error("Error completely deleting note:", error);
+                showToast("error", "Failed to delete the note. Please try again.");
             }
         }
     }, [noteToDelete, dispatch, noteData]);
 
     return (
-        <div className="flex flex-col min-h-[25rem]">
+        <div className="flex flex-col min-h-100">
             {/* Header Area */}
             <div className="flex items-end justify-between mb-6 ">
                 <div>

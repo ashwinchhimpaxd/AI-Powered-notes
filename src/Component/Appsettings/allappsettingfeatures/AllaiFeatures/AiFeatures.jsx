@@ -9,10 +9,10 @@ function AiFeatures() {
 
 
     const handleAutosaveTimerChange = (event) => {
-        const value = setSavingNoteTimer(event.target.dataset.value)
-        console.log(value, "value")
+        const value = setSavingNoteTimer(event.target.dataset.value);
         dispatch(value);
     }
+
 
     return (
         <section className="relative overflow-hidden group bg-card/80 backdrop-blur-2xl border border-border rounded-3xl p-6 sm:p-10 transition-all duration-500 hover:border-primary/50 shadow-sm">

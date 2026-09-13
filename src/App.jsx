@@ -48,25 +48,20 @@ function App() {
     const checkSession = async () => {
       try {
         if (isLogin) {
-          console.log("user already Login ")
           return;
         }
-        console.log("user fetched from the server")
         const currentUser = await userAuthService.getCurrentUser();
         if (currentUser) {
-          console.log("Login success")
           dispatch(login({
             UserData: {
               userdetaild: currentUser
             }
           }));
         } else {
-          console.log("No user found")
           dispatch(clearNotes());
           dispatch(logout());
         }
       } catch (error) {
-        console.error("Session check failed:", error);
         dispatch(clearNotes());
         dispatch(logout());
       } finally {

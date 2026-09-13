@@ -56,8 +56,6 @@ Rules:
         // Compute max_tokens and temperature from actual prompt length
         const fullPromptText = (systemPrompt || "") + prompt;
         const { max_tokens, temperature } = getMaxTokens(task, fullPromptText);
-
-        console.log(max_tokens)
         const isStreaming = !!onChunk;
 
         const requestParams = {
@@ -105,10 +103,7 @@ Rules:
 
                 const status = response.status;
 
-                console.error(
-                    "NVIDIA API Error:",
-                    errorData
-                );
+               
 
                 let cleanMsg =
                     "Failed to communicate with AI.";

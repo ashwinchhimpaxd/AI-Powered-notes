@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 import { logout } from '../../redux/Authantication/UserAuthanticationSlice';
 import { clearNotes } from '../../redux/NotesCreation/NotesCreationSlice';
 import { SignOut, PaintBrushBroad } from "@phosphor-icons/react";
+import { showToast } from '../Editor/utils/showToast.js';
+
 
 function Appsetting() {
 
@@ -15,21 +17,18 @@ function Appsetting() {
     const navigate = useNavigate();
 
 
-    useEffect(() => {
-        console.log("appsetting mounted  ")
-    }, [])
     const handleLogout = async () => {
         try {
             await userAuthService.logoutFromCurrentdevice();
         } catch (error) {
-            console.error("Server-side logout failed:", error.message);
+            showToast("warning", "Logout encountered an issue, but you have been signed out locally.");
         } finally {
-            // Always clear local state and navigate even if server request fails
             dispatch(clearNotes());
             dispatch(logout());
             navigate("/Login");
         }
     }
+
     return (
         <div className='flex-1 w-full relative  text-foreground flex flex-col items-start pb-20  slide-in '>
             {/* Ambient Background Glow Using Root Primary Color */}

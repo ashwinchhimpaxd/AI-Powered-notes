@@ -44,12 +44,9 @@ export const TASK_CONFIG = {
  * @returns {{ max_tokens: number, temperature: number }}
  */
 export function getMaxTokens(task, inputText) {
-    console.log(inputText)
     const config = TASK_CONFIG[task] || TASK_CONFIG.editStandard;
     const inputTokens = Math.ceil((inputText?.length || 0) / 3);
-    console.log(inputTokens)
     const calculated = Math.ceil(inputTokens * config.ratio);
-    console.log(calculated)
     return {
         max_tokens: Math.min(config.max, Math.max(config.min, calculated)),
         temperature: config.temperature,

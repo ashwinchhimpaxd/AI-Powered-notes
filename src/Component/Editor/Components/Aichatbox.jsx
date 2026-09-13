@@ -236,11 +236,9 @@ The JSON must be valid, complete, and parseable. Do NOT truncate or leave it unf
                     DYNAMIC_SYSTEM_PROMPT,
                     wantsShort ? "generateShort" : "generateLong"
                 );
-                // console.log("data before pased:", responseText)
 
                 // Robust multi-strategy parse — handles malformed/HTML-embedded JSON
                 const parsedData = robustParseAiJson(responseText, topic);
-                // console.log("data after parsed: ", parsedData)
 
                 if (!parsedData || !parsedData.content) {
                     throw new Error("No valid content found in the AI response.");

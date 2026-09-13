@@ -1,24 +1,26 @@
 import { useNavigate } from "react-router-dom";
 import userAuthService from '@/AppWrite/auth';
+import { showToast } from '../Component/Editor/utils/showToast.js';
 import { Sparkle, ArrowRight, TreeStructure, MagnifyingGlass, FileText } from "@phosphor-icons/react";
+
 
 function LandingPage() {
     const navigate = useNavigate();
 
     const handleGetStarted = async () => {
-        console.log("Get Started button clicked");
         try {
             const user = await userAuthService.getCurrentUser();
             if (user) {
-                navigate("/dashboard"); // User is logged in, redirect to dashboard
+                navigate("/dashboard");
             } else {
-                navigate("/login"); // User is not logged in, redirect to login page
+                navigate("/login");
             }
         } catch (error) {
-            console.error("Error checking login status:", error);
-            navigate("/login"); // In case of error, redirect to login page
+            showToast("error", "Something went wrong. Please try again.");
+            navigate("/login");
         }
     };
+
 
     return (
         <div id='Home' className="min-h-screen bg-background text-foreground selection:bg-[#a855f7]/30 selection:text-white font-sans relative overflow-x-hidden">

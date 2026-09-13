@@ -31,11 +31,8 @@ export class UserAuthentication {
                 email
             };
         } catch (error) {
-            console.error("Appwrite service :: sendOtp :: error", error);
             throw error;
-        } finally {
-            console.log("system of otp sender if finiced successfully")
-        }
+        } 
     }
 
     // 4. PHASE 2: Verify OTP and Login
@@ -48,7 +45,6 @@ export class UserAuthentication {
             }
             return usersession;
         } catch (error) {
-            console.error(error);
             throw error;
         }
     }
@@ -61,7 +57,6 @@ export class UserAuthentication {
                 `${window.location.origin}/verify-email`
             );
         } catch (error) {
-            console.error("Send verification email failed", error);
             throw error;
         }
     }
@@ -74,7 +69,6 @@ export class UserAuthentication {
                 secret
             );
         } catch (error) {
-            console.error("Email verification failed", error);
             throw error;
         }
     }
@@ -85,7 +79,6 @@ export class UserAuthentication {
             const user = await this.account.get();
             return user.emailVerification;
         } catch (error) {
-            console.error("Get verification status failed", error);
             throw error;
         }
     }
@@ -118,7 +111,6 @@ export class UserAuthentication {
             await this.account.deleteSessions('all');
             return true;
         } catch (error) {
-            console.error("Appwrite service :: logout From All devices :: error", error);
             return false;
         }
     }
@@ -129,7 +121,6 @@ export class UserAuthentication {
             await this.account.deleteSession('current');
             return true;
         } catch (error) {
-            console.error("Appwrite service :: logout From Current device :: error", error);
             return false;
         }
     }
@@ -151,22 +142,6 @@ export class UserAuthentication {
             throw error;
         }
     }
-
-    // Auth.js mein ye change karke dekho
-    // async AiResponse_triggerFunction(functionId, payload) {
-    //     const execution = await this.functions.createExecution(
-    //         functionId,
-    //         JSON.stringify(payload),
-    //         false // path undefined hai, par ye check kar lo
-    //     );
-
-    //     // console.log("Status Code:", execution);
-    //     console.log("Status Code:", execution.responseStatusCode);
-    //     console.log("Response Body:", execution.responseBody);
-
-
-    //     return JSON.parse(execution.responseBody);
-    // }
 }
 
 const userAuthService = new UserAuthentication();

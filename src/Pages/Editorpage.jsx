@@ -3,11 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Query } from 'appwrite';
 import { CircleNotch } from '@phosphor-icons/react';
-
 import AntigravityEditor from '../Component/Editor/AntigravityEditor';
 import service from '../AppWrite/Setgetuserdatas/config.js';
 import { setnoteid, setcurrentnoteinfo } from '../redux/currentnoteinfoslice/currentnoteinfoslice.js';
 import { selectAllNotes } from '../redux/NotesCreation/NotesCreationSlice.js';
+import { showToast } from '../Component/Editor/utils/showToast.js';
+
 
 function Editorpage() {
     const { slug } = useParams();
@@ -23,11 +24,10 @@ function Editorpage() {
     const reduxNoteId = useSelector((state) => state.currentnoteinfoslice.noteid);
     const allNotes = useSelector(selectAllNotes);
 
-    useEffect(() => {
-        if (editorInstance) {
-            console.log("Editor fully ready now");
-        }
-    }, [editorInstance]);
+    // useEffect(() => {
+    //     if (editorInstance) { /* editor ready */ }
+    // }, [editorInstance]);
+
 
     // Load note dynamic logic by URL slug parameter
     useEffect(() => {
@@ -62,7 +62,6 @@ function Editorpage() {
             // 3. Try to find the note locally in Redux cache (allNotes)
             const localNote = allNotes.find(note => note.slug === slug);
             if (localNote) {
-                console.log("Loading note from Redux cache:", localNote.$id);
                 dispatch(setnoteid(localNote.$id));
                 dispatch(setcurrentnoteinfo({
                     title: localNote.notes_title || "",
@@ -77,14 +76,12 @@ function Editorpage() {
             // 4. Fallback: Fetch the note from Appwrite server by slug
             setIsLoading(true);
             try {
-                console.log("Note not found in Redux cache. Querying Appwrite server for slug:", slug);
                 const response = await service.getNotes([
                     Query.equal("slug", slug)
                 ]);
 
                 if (response && response.documents && response.documents.length > 0) {
                     const serverNote = response.documents[0];
-                    console.log("Loaded note from Appwrite:", serverNote.$id);
                     dispatch(setnoteid(serverNote.$id));
                     dispatch(setcurrentnoteinfo({
                         title: serverNote.notes_title || "",
@@ -94,13 +91,13 @@ function Editorpage() {
                         isimportant: serverNote.is_note_important || false
                     }));
                 } else {
-                    console.warn("Note slug not found on server:", slug);
-                    // Redirect back to Dashboard
+                    showToast("warning", "Note not found. Redirecting to your notes.");
                     navigate("/Dashboard/recent-notes");
                 }
             } catch (error) {
-                console.error("Failed to fetch note by slug:", error);
+                showToast("error", "Failed to load note. Please try again.");
                 navigate("/Dashboard/recent-notes");
+
             } finally {
                 setIsLoading(false);
             }
