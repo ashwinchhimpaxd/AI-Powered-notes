@@ -16,11 +16,12 @@ function LandingPage() {
                 navigate("/login");
             }
         } catch (error) {
-            showToast("error", "Something went wrong. Please try again.");
+            if (error?.code !== 401 && error?.response?.status !== 401) {
+                showToast("error", "Something went wrong. Please try again.");
+            }
             navigate("/login");
         }
     };
-
 
     return (
         <div id='Home' className="min-h-screen bg-background text-foreground selection:bg-[#a855f7]/30 selection:text-white font-sans relative overflow-x-hidden">

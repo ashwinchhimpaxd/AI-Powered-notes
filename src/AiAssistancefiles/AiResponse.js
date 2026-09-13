@@ -103,8 +103,6 @@ Rules:
 
                 const status = response.status;
 
-               
-
                 let cleanMsg =
                     "Failed to communicate with AI.";
 
