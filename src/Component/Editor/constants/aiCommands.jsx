@@ -16,7 +16,8 @@ export const AI_COMMANDS = [
     mode: "replace",
     icon: <Sparkle weight="fill" />,
     label: "Improve Writing",
-    description: "Enhance clarity, readability, and flow while preserving the original meaning, structure, headings, lists, formatting, and key information.", task: "note"
+    description: "Enhance clarity, readability, and flow while preserving the original meaning, structure, headings, lists, formatting, and key information.",
+    task: "editStandard"
   },
   {
     id: "rewrite",
@@ -24,7 +25,7 @@ export const AI_COMMANDS = [
     icon: <MagicWand weight="fill" />,
     label: "Rewrite Professionally",
     description:
-      "Rewrite in a professional and polished tone while preserving all facts, structure, headings, formatting, and intent.", task: "note"
+      "Rewrite in a professional and polished tone while preserving all facts, structure, headings, formatting, and intent.", task: "editStandard"
   },
   {
     id: "shorten",
@@ -32,7 +33,7 @@ export const AI_COMMANDS = [
     icon: <TextAa />,
     label: "Shorten Text",
     description:
-      "Reduce length by removing repetition and unnecessary details while retaining key information, structure, and formatting.", task: "chat"
+      "Reduce length by removing repetition and unnecessary details while retaining key information, structure, and formatting.", task: "editShort"
   },
   {
     id: "expand",
@@ -40,7 +41,7 @@ export const AI_COMMANDS = [
     icon: <TextAa />,
     label: "Expand Topic",
     description:
-      "Expand the content with deeper explanations, supporting details, examples, and context while preserving the existing structure, headings, lists, and formatting.", task: "complex"
+      "Expand the content with deeper explanations, supporting details, examples, and context while preserving the existing structure, headings, lists, and formatting.", task: "generateLong"
   },
   {
     id: "grammar",
@@ -48,7 +49,7 @@ export const AI_COMMANDS = [
     icon: <TextB />,
     label: "Fix Grammar",
     description:
-      "Correct grammar, spelling, punctuation, and sentence structure without changing meaning, formatting, or organization.", task: "chat"
+      "Correct grammar, spelling, punctuation, and sentence structure without changing meaning, formatting, or organization.", task: "editShort"
   },
   {
     id: "tone",
@@ -56,7 +57,7 @@ export const AI_COMMANDS = [
     icon: <MagicWand />,
     label: "Change Tone",
     description:
-      "Adjust the tone to be more conversational and engaging while preserving content, structure, formatting, and information.",task: "note"
+      "Adjust the tone to be more conversational and engaging while preserving content, structure, formatting, and information.", task: "editStandard"
   },
   {
     id: "simplify",
@@ -64,7 +65,7 @@ export const AI_COMMANDS = [
     icon: <TextAa />,
     label: "Simplify Language",
     description:
-      "Rewrite using simpler language and shorter sentences while preserving meaning, structure, formatting, and important details.", task: "chat"
+      "Rewrite using simpler language and shorter sentences while preserving meaning, structure, formatting, and important details.", task: "editShort"
   },
   //  
   {
@@ -73,7 +74,7 @@ export const AI_COMMANDS = [
     icon: <List />,
     label: "Convert to Bullet Points",
     description:
-      "Convert the content into clear, organized bullet points while retaining all important information and logical hierarchy.", task: "summarize"
+      "Convert the content into clear, organized bullet points while retaining all important information and logical hierarchy.", task: "editStandard"
   },
 
   // ── APPEND commands (generate new sections added to the note) ──────────
@@ -83,7 +84,8 @@ export const AI_COMMANDS = [
     icon: <CaretRight />,
     label: "Continue Writing",
     description:
-      "Continue the content naturally from the current position, matching the existing style, tone, context, and structure.", task: "complex"
+      "Continue the content naturally from the current position, matching the existing style, tone, context, and structure.",
+    task: "generateLong"
   },
   {
     id: "notes",
@@ -91,7 +93,8 @@ export const AI_COMMANDS = [
     icon: <Textbox />,
     label: "Add Important Notes",
     description:
-      "Generate a concise 'Important Notes' section highlighting key insights, warnings, takeaways, or essential points.",task: "complex"
+      "Generate a concise 'Important Notes' section highlighting key insights, warnings, takeaways, or essential points.",
+    task: "generateShort"
   },
   {
     id: "related",
@@ -100,7 +103,7 @@ export const AI_COMMANDS = [
     label: "Add Related Topics",
     description:
       "Suggest relevant topics, concepts, or subtopics that naturally extend the current content.",
-      task:"note"
+    task: "generateShort"
   },
   {
     id: "explain",
@@ -108,71 +111,17 @@ export const AI_COMMANDS = [
     icon: <ChatTeardropText />,
     label: "Explain This",
     description:
-      "Add a clear and beginner-friendly explanation of the selected content using simple language and practical examples when helpful.", task: "chat"
+      "Add a clear and beginner-friendly explanation of the selected content using simple language and practical examples when helpful.",
+    task: "generateStandard"
   },
-  // {
-  //   id: "summarize",
-  //   mode: "append",
-  //   icon: <ListBullets />,
-  //   label: "Summarize Section",
-  //   description:
-  //     "Generate a concise summary covering the most important ideas, conclusions, and key takeaways."
-  // },
-  // {
-  //   id: "flashcards",
-  //   mode: "append",
-  //   icon: <Textbox />,
-  //   label: "Generate Flashcards",
-  //   description:
-  //     "Create study flashcards in a question-and-answer format covering the most important concepts from the content."
-  // },
-  // {
-  //   id: "studynotes",
-  //   mode: "append",
-  //   icon: <TextHOne />,
-  //   label: "Create Study Notes",
-  //   description:
-  //     "Generate well-structured study notes with headings, key concepts, definitions, examples, and important takeaways."
-  // },
+
   {
     id: "conclusion",
     mode: "append",
     icon: <Quotes />,
     label: "Add Conclusion",
     description:
-      "Write a conclusion that summarizes the main points and provides a clear closing perspective."
-    , task: "summarize"
+      "Write a conclusion that summarizes the main points and provides a clear closing perspective.",
+    task: "generateShort"
   },
-  // {
-  //   id: "title",
-  //   mode: "append",
-  //   icon: <TextHOne />,
-  //   label: "Generate Title",
-  //   description:
-  //     "Generate a concise, descriptive, and relevant title that accurately represents the content."
-  // },
-  // {
-  //   id: "actions",
-  //   mode: "append",
-  //   icon: <ListBullets />,
-  //   label: "Create Action Items",
-  //   description:
-  //     "Extract actionable tasks, next steps, or to-do items and present them as a structured checklist."
-  // },
-  // {
-  //   id: "quiz",
-  //   mode: "append",
-  //   icon: <Sparkle />,
-  //   label: "Generate Quiz",
-  //   description:
-  //     "Create quiz questions with answers to test understanding of the key concepts covered in the content."
-  // },
-  // {
-  //   id: "examples",
-  //   mode: "append",
-  //   icon: <CaretRight />,
-  //   label: "Generate Examples",
-  //   description:
-  //     "Add practical, realistic, and relevant examples that help clarify and reinforce the concepts discussed."
-  // }
 ];

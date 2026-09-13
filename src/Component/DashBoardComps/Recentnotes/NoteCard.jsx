@@ -135,7 +135,7 @@ const NoteCard = memo(({
                 }`}
         >
             {/* 1. Left Sidebar Column */}
-            <div className="flex-shrink-0 w-32 md:w-40 bg-background p-4 flex flex-col justify-between  gap-4 border-r border-border relative z-10">
+            <div className="shrink-0 w-32 md:w-40 bg-background p-4 flex flex-col justify-between  gap-4 border-r border-border relative z-10">
                 <div className="flex flex-col gap-4 ">
                     {/* ID Indicator */}
                     <div className="flex items-center gap-1.5 text-foreground/80 font-bold text-[10px] md:text-xs tracking-wider">
@@ -195,7 +195,7 @@ const NoteCard = memo(({
                 </div>
 
                 {/* Horizontal Divider */}
-                <div className="w-full h-[1px] bg-border my-3" />
+                <div className="w-full  bg-border my-3" />
 
                 {/* Snippet Description */}
                 <p className="text-muted-foreground text-xs md:text-sm leading-relaxed line-clamp-3 md:line-clamp-4 flex-1">
@@ -218,7 +218,7 @@ const NoteCard = memo(({
                         aria-label={note.is_note_important ? `Unbookmark note ${note.notes_title || "Untitled"}` : `Bookmark note ${note.notes_title || "Untitled"}`}
                     >
                         <Bookmark size={14} weight={note.is_note_important ? "fill" : "regular"} />
-                        <span>{note.is_note_important ? "Bookmarked" : "Save"}</span>
+                        <span>{note.is_note_important ? "Saved" : "Save"}</span>
                     </button>
 
                     {/* Share Action */}
@@ -265,7 +265,7 @@ const NoteCard = memo(({
 
             {/* Dropdown Menu (Absolute overlay) */}
             {openMenu && (
-                <div className="absolute top-12 right-4 w-32 bg-card/95 backdrop-blur-2xl border border-border rounded-xl shadow-2xl z-[100] flex flex-col py-1 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="absolute top-12 right-4 w-32 bg-card/95 backdrop-blur-2xl border border-border rounded-xl shadow-2xl z-100 flex flex-col py-1 animate-in fade-in slide-in-from-top-2 duration-150">
                     <button
                         type="button"
                         onClick={() => onClick(note)}

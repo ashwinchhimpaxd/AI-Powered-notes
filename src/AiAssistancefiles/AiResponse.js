@@ -6,6 +6,7 @@
  *
  * NVIDIA API key NEVER comes to browser.
  */
+import { getMaxTokens } from "./AiModelTokesAndLimites/ModelTokensAndLimites";
 
 class AIService {
 
@@ -22,38 +23,13 @@ class AIService {
         task = null
     ) {
 
-        const config = {
-            chat: {
-                max_tokens: 1200,
-                temperature: 0.3,
-            },
 
-            note: {
-                max_tokens: 1800,
-                temperature: 0.2,
-            },
-
-            summarize: {
-                max_tokens: 1000,
-                temperature: 0.2,
-            },
-
-            complex: {
-                max_tokens: 4096,
-                temperature: 0.5,
-            },
-        };
-
-        const settings = config[task] || config.chat;
-
-        try {
-
-            const messages = [
-                {
-                    role: "system",
-                    content:
-                        systemPrompt ||
-                        `You are a helpful AI notes assistant.
+        const messages = [
+            {
+                role: "system",
+                content:
+                    systemPrompt ||
+                    `You are a helpful AI notes assistant.
 
 When the user explicitly asks you to create a note,
 output it using this exact syntax:
@@ -70,26 +46,33 @@ Rules:
 - Keep notes clean and structured
 - Use proper HTML formatting
 - Be concise and readable`
-                },
+            },
+            {
+                role: "user",
+                content: prompt
+            }
+        ];
 
-                {
-                    role: "user",
-                    content: prompt
-                }
-            ];
+        // Compute max_tokens and temperature from actual prompt length
+        const fullPromptText = (systemPrompt || "") + prompt;
+        const { max_tokens, temperature } = getMaxTokens(task, fullPromptText);
 
-            const isStreaming = !!onChunk;
+        console.log(max_tokens)
+        const isStreaming = !!onChunk;
 
-            const requestParams = {
-                model: "nvidia/nemotron-3-super-120b-a12b",
-                messages,
-                max_tokens: settings.max_tokens,
-                temperature: settings.temperature,
-                top_p: 1,
-                stream: isStreaming,
-            };
+        const requestParams = {
+            // model: "nvidia/nemotron-3-super-120b-a12b",
+            model: "nvidia/nemotron-3-ultra-550b-a55b",
+            messages,
+            max_tokens,
+            temperature,
+            top_p: 1,
+            stream: isStreaming,
+        };
+        try {
 
             if (jsonMode) {
+
                 requestParams.response_format = {
                     type: "json_object"
                 };

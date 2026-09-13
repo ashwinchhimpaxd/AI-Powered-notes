@@ -7,15 +7,25 @@ import { handleError } from "../../utils/errorHandler.js";
 import { addNoteToTop } from "../../redux/NotesCreation/NotesCreationSlice.js";
 import { showToast } from "../Editor/utils/showToast.js";
 
+/**
+ * Extracts the title from a partial / complete JSON-like AI response.
+ * Works even if the JSON is malformed.
+ */
 const extractStreamedTitle = (streamedText) => {
-    const match = streamedText.match(/"title"\s*:\s*"([^"]*)"?/);
-    return match ? match[1] : "";
+    const match = streamedText.match(/"title"\s*:\s*"([^"]*?)"/);
+    return match ? match[1].trim() : "";
 };
 
+/**
+ * Extracts the HTML content value from a partial / complete JSON-like AI response.
+ * Falls back gracefully when the JSON is incomplete or malformed.
+ */
 const extractStreamedContent = (streamedText) => {
+    // Try to find content field
     const match = streamedText.match(/"content"\s*:\s*"([\s\S]*)/);
     if (!match) return "";
     let contentVal = match[1];
+    // Strip trailing JSON structure (closing quote / brace)
     contentVal = contentVal.replace(/"\s*\}?\s*$/, "");
     return contentVal
         .replace(/\\n/g, "\n")
@@ -24,29 +34,81 @@ const extractStreamedContent = (streamedText) => {
         .replace(/\\r/g, "\r");
 };
 
-const sanitizeJsonString = (rawStr) => {
-    let inString = false;
-    let result = "";
-    for (let i = 0; i < rawStr.length; i++) {
-        const char = rawStr[i];
-        if (char === '"' && (i === 0 || rawStr[i - 1] !== '\\')) {
-            inString = !inString;
-            result += char;
-        } else if (inString) {
-            if (char === '\n') {
-                result += '\\n';
-            } else if (char === '\r') {
-                result += '\\r';
-            } else if (char === '\t') {
-                result += '\\t';
-            } else {
-                result += char;
+/**
+ * Robust multi-strategy parser for AI JSON responses.
+ *
+ * Strategy 1: Direct JSON.parse (fast path — works most of the time)
+ * Strategy 2: Sanitize bare control characters inside strings, then parse
+ * Strategy 3: Pure regex extraction (works even when JSON is fully broken)
+ *
+ * @param {string} raw - Raw string returned by the AI model
+ * @param {string} fallbackTitle - Title to use when extraction fails
+ * @returns {{ title: string, content: string } | null}
+ */
+const robustParseAiJson = (raw, fallbackTitle = "") => {
+    if (!raw || typeof raw !== "string") return null;
+
+    // ── Strategy 1: direct parse ──────────────────────────────────────────
+    const jsonBlock = raw.match(/\{[\s\S]*\}/);
+    if (jsonBlock) {
+        try {
+            const parsed = JSON.parse(jsonBlock[0]);
+            if (parsed && parsed.content) return parsed;
+        } catch { /* fall through */ }
+    }
+
+    // ── Strategy 2: sanitize bare newlines/tabs inside strings, then parse ─
+    if (jsonBlock) {
+        try {
+            let sanitized = "";
+            let inStr = false;
+            let escaped = false;
+            for (let i = 0; i < jsonBlock[0].length; i++) {
+                const ch = jsonBlock[0][i];
+                if (escaped) {
+                    sanitized += ch;
+                    escaped = false;
+                    continue;
+                }
+                if (ch === "\\") { escaped = true; sanitized += ch; continue; }
+                if (ch === '"') { inStr = !inStr; sanitized += ch; continue; }
+                if (inStr) {
+                    if (ch === "\n") { sanitized += "\\n"; continue; }
+                    if (ch === "\r") { sanitized += "\\r"; continue; }
+                    if (ch === "\t") { sanitized += "\\t"; continue; }
+                }
+                sanitized += ch;
             }
-        } else {
-            result += char;
+            const parsed = JSON.parse(sanitized);
+            if (parsed && parsed.content) return parsed;
+        } catch { /* fall through */ }
+    }
+
+    // ── Strategy 3: regex extraction (JSON is too broken to parse) ────────
+    const titleMatch = raw.match(/"title"\s*:\s*"([^"]*?)"/);
+    const contentMatch = raw.match(/"content"\s*:\s*"([\s\S]*)/);
+    if (contentMatch) {
+        let contentVal = contentMatch[1].replace(/"\s*\}?\s*$/, "");
+        contentVal = contentVal
+            .replace(/\\n/g, "\n")
+            .replace(/\\"/g, '"')
+            .replace(/\\t/g, "\t")
+            .replace(/\\r/g, "\r");
+        if (contentVal.trim()) {
+            return {
+                title: titleMatch ? titleMatch[1] : fallbackTitle,
+                content: contentVal.trim(),
+            };
         }
     }
-    return result.trim();
+
+    // ── Last resort: if the whole response looks like HTML, use it ─────────
+    const trimmed = raw.trim();
+    if (/<[a-z][\s\S]*>/i.test(trimmed)) {
+        return { title: fallbackTitle, content: trimmed };
+    }
+
+    return null;
 };
 
 export default function SearchBarAndAutoNotes({ onSearchChange, setIsCreatingNote }) {
@@ -118,33 +180,24 @@ export default function SearchBarAndAutoNotes({ onSearchChange, setIsCreatingNot
             setSearchQuery("");
             setIsCreatingNote(true);
 
-            const NOTE_PATTERNS = [
-                "make a note",
-                "make note",
-                "create notes",
-                "create a notes",
-                "generate notes",
-                "generate a notes",
-                "study notes",
-                "study a notes",
-                "revision notes",
-                "revision a notes",
-                "notes on",
-                "notes on a",
-                "prepare notes",
-                "prepare a notes"
-            ];
+            // ── Detect what length the user actually wants ──────────────────────
+            // Tier 1: explicit word count (e.g. "in 100 words")
+            const wordLimitMatch = topic.match(/(\d+)\s*words?/i);
+            const requestedLimit = wordLimitMatch ? parseInt(wordLimitMatch[1], 10) : null;
 
-            const isNoteRequest = NOTE_PATTERNS.some(pattern =>
-                topic.toLowerCase().includes(pattern)
-            );
+            // Tier 2: short/brief/quick/summary/overview keywords
+            const wantsShort = !requestedLimit && /\b(short|brief|quick|summary|overview|concise|simple|small)\b/i.test(topic);
 
-            const intent = isNoteRequest ? "NOTE" : "ARTICLE";
+            const lengthInstruction = requestedLimit
+                ? `WORD LIMIT: Keep the entire "content" field strictly under ${requestedLimit} words. Be concise and direct.`
+                : wantsShort
+                ? `LENGTH: The user wants a SHORT, CONCISE response. Provide a focused overview — do NOT write a long-form document. Keep it brief and to the point.`
+                : `LENGTH: Write a detailed, well-structured document. Cover the topic thoroughly with meaningful depth.`;
+
 
             try {
-                const prompt = `Document Intent: ${intent}
-                
-                You MUST write an EXTREMELY DETAILED, IN-DEPTH, AND COMPREHENSIVE document. Do NOT give brief summaries or short sentences. Write extensively about every aspect of the topic.
+                const prompt = `
+                ${lengthInstruction}
                 
                 Adapt the structure dynamically to the subject instead of using a fixed template.
                 Choose section headings that naturally fit the topic.
@@ -180,37 +233,23 @@ export default function SearchBarAndAutoNotes({ onSearchChange, setIsCreatingNot
                 ${topic}
                 `;
 
+
                 const DASHBOARD_CREATE_SYSTEM_PROMPT = `You are an expert research, analysis, and knowledge assistant.
 
-Your goal is to transform the user's query into a highly detailed, comprehensive, long-form knowledge document that can be saved, searched, and referenced in the future.
+Your goal is to transform the user's query into a well-formatted HTML knowledge document that can be saved and referenced.
 
-CONTENT QUALITY REQUIREMENTS:
+CONTENT LENGTH RULES:
+${requestedLimit
+                        ? `- STRICT WORD LIMIT: Keep the content under ${requestedLimit} words. Be direct and concise.`
+                        : wantsShort
+                        ? `- The user explicitly requested a SHORT response. Do NOT write a long-form document. Provide a focused, concise answer.`
+                        : `- Write a detailed document with meaningful depth. Avoid filler. Focus on information density.`
+                    }
 
-1. Do NOT provide short answers, brief summaries, or shallow overviews.
-2. Every major section should contain detailed explanations and meaningful depth.
-3. Explain not only WHAT something is, but also WHY it matters, HOW it works, its implications, limitations, and real-world relevance when applicable.
-4. Prioritize the most important keywords, entities, and themes found in the user's query.
-5. Allocate significantly more content to the primary subject than to secondary subjects.
-6. Avoid generic filler content and repetitive statements.
-7. Focus on information density, not word count.
-8. Use concrete examples whenever they improve understanding.
-9. Maintain logical flow between sections.
-
-TOPIC ANALYSIS RULES:
-
-1. First identify the primary subject of the query.
-2. Identify supporting or secondary subjects.
-3. The primary subject should receive approximately 60-80% of the document's attention.
-4. Do not distribute content equally across all mentioned topics.
-5. If the query contains years, forecasts, trends, predictions, markets, companies, industries, jobs, salaries, investments, technology adoption, or future outlooks:
-
-   * Include relevant statistics when available.
-   * Include projections and forecasts.
-   * Include trend analysis.
-   * Include market implications.
-   * Include industry-specific insights.
-   * Include practical examples.
-   * Include future opportunities and risks.
+TOPIC ANALYSIS:
+1. Identify the primary subject and give it 60-80% of the document's attention.
+2. If the query involves trends, forecasts, or future outlooks: include relevant statistics and projections.
+3. Use concrete examples to improve understanding.
 
 STRUCTURE RULES:
 
@@ -248,33 +287,11 @@ Return ONLY the JSON object.
 `;
 
                 // Enforce JSON Mode (fourth parameter set to true)
-                const responseText = await sendMessageToAI(prompt, [], null, true, DASHBOARD_CREATE_SYSTEM_PROMPT);
+                const responseText = await sendMessageToAI(prompt, [], null, true, DASHBOARD_CREATE_SYSTEM_PROMPT, wantsShort ? "generateShort" : "generateLong");
 
-                // Extract the JSON object using regex to ignore any surrounding text or tags
-                let parsedData = null;
-                const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-                if (jsonMatch) {
-                    const rawJsonStr = jsonMatch[0];
-                    const sanitizedJsonStr = sanitizeJsonString(rawJsonStr);
-                    try {
-                        parsedData = JSON.parse(sanitizedJsonStr);
-                    } catch (parseError) {
-                        console.warn("JSON.parse failed, falling back to regex extraction:", parseError);
-                    }
-                }
 
-                // Fallback to regex extraction if JSON parsing failed or object is empty
-                if (!parsedData || !parsedData.content) {
-                    console.log("Using regex fallback to extract content and title.");
-                    const extractedContent = extractStreamedContent(responseText);
-                    const extractedTitle = extractStreamedTitle(responseText) || topic;
-                    if (extractedContent) {
-                        parsedData = {
-                            title: extractedTitle,
-                            content: extractedContent
-                        };
-                    }
-                }
+                // Robust multi-strategy parse — handles malformed/HTML-embedded JSON
+                const parsedData = robustParseAiJson(responseText, topic);
 
                 if (!parsedData || !parsedData.content) {
                     throw new Error("No valid content found in the AI response.");
@@ -325,7 +342,7 @@ Return ONLY the JSON object.
             </div>
 
             {/* Responsive Search Bar */}
-            <div className="relative flex items-center h-11 w-full md:w-[28rem] rounded-xl bg-card border border-border focus-within:border-[#8b5cf6] transition-colors z-10 shadow-lg">
+            <div className="relative flex items-center h-11 w-full md:w-md rounded-xl bg-card border border-border focus-within:border-[#8b5cf6] transition-colors z-10 shadow-lg">
                 <div className="pl-4 pr-2 flex items-center pointer-events-none">
                     <MagnifyingGlass className="h-5 w-5 text-muted-foreground" />
                 </div>
