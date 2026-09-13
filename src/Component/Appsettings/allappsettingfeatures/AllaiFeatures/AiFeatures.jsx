@@ -83,7 +83,7 @@ function AiFeatures() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5 hidden">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5 ">
                     {/* Feature 1 */}
                     <div className="bg-background/50 border border-border rounded-2xl p-6 flex flex-col justify-between hover:bg-muted/50 hover:border-primary/30 transition-all duration-300 group/card cursor-pointer relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-bl-full pointer-events-none opacity-0 group-hover/card:opacity-100 transition-opacity"></div>

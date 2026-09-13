@@ -4,9 +4,9 @@ import { useDispatch } from "react-redux";
 import { login } from "@/redux/Authantication/UserAuthanticationSlice.js";
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
-import { EnvelopeSimple, Key, GithubLogo, GoogleLogo, ArrowRight, CircleNotch } from "@phosphor-icons/react";
+import { EnvelopeSimple, Key, GoogleLogo, ArrowRight, CircleNotch } from "@phosphor-icons/react";
 import { showToast } from "../Editor/utils/showToast.js";
-
+import { handleError } from "@/utils/errorHandler.js";
 const LoginUsingOTP = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -32,21 +32,28 @@ const LoginUsingOTP = () => {
 
 
     const OnSendOtp = useCallback(async () => {
+
         const isValid = await trigger("Email");
         if (!isValid) return false;
-
         const Email = getValues("Email");
+
         try {
+
             const otpData = await userAuthService.sendOtp(Email);
+
             if (otpData) {
                 setOtpUserId(otpData.userId);
+                showToast("success", "OTP sent successfully");
+                return true;
             }
-            showToast("success", "OTP sent successfully");
-            return true;
+
+            throw Error("an error occur while sending OTP")
+
         } catch (error) {
-            showToast("error", "an error occur while sending OTP");
+            handleError(error)
             return false;
         }
+
     }, [trigger, getValues]); // Dependencies
 
     const handleSendOTPClick = useCallback(
@@ -83,6 +90,17 @@ const LoginUsingOTP = () => {
             });
         }
     };
+
+    // google login 
+    const handleGoogleLogin = async () => {
+        try {
+            await userAuthService.loginWithGoogle();
+        } catch (error) {
+            console.log(error)
+            handleError(error, { action: "Fail to login by google" })
+        }
+    };
+
 
     return (
         <div className="bg-[#0a0a0a] min-h-screen w-full flex flex-col justify-between font-sans text-foreground selection:bg-purple-500/30">
@@ -190,11 +208,13 @@ const LoginUsingOTP = () => {
                     </div>
 
                     {/* Social Buttons */}
-                    <div className="grid grid-cols-2 gap-3">
-                        <button type="button" className="flex items-center justify-center gap-2 h-10 bg-[#1a1a1a] border border-[#262626] rounded-lg text-sm font-medium text-[#e5e5e5] hover:bg-[#262626] transition-colors">
+                    <div className="grid grid-cols-1 gap-3">
+                        {/* <button type="button" className="flex items-center justify-center gap-2 h-10 bg-[#1a1a1a] border border-[#262626] rounded-lg text-sm font-medium text-[#e5e5e5] hover:bg-[#262626] transition-colors">
                             <GithubLogo className="h-5 w-5" /> GitHub
-                        </button>
-                        <button type="button" className="flex items-center justify-center gap-2 h-10 bg-[#1a1a1a] border border-[#262626] rounded-lg text-sm font-medium text-[#e5e5e5] hover:bg-[#262626] transition-colors">
+                        </button> */}
+                        <button
+                            onClick={handleGoogleLogin}
+                            type="button" className="flex items-center justify-center gap-2 h-10 bg-[#1a1a1a] border border-[#262626] rounded-lg text-sm font-medium text-[#e5e5e5] hover:bg-[#262626] transition-colors">
                             <GoogleLogo className="h-5 w-5" /> Google
                         </button>
                     </div>
@@ -202,7 +222,7 @@ const LoginUsingOTP = () => {
             </div>
 
             {/* Footer */}
-            <div className="border-t border-[#262626] bg-[#0a0a0a] py-6 px-4 md:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-medium text-[#52525b] uppercase tracking-wider">
+            {/* <div className="border-t border-[#262626] bg-[#0a0a0a] py-6 px-4 md:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-medium text-[#52525b] uppercase tracking-wider">
                 <p>© 2024 DEEP FOCUS AI. DESIGNED FOR PEAK COGNITIVE PERFORMANCE.</p>
                 <div className="flex gap-4 md:gap-6">
                     <a href="/privacy" className="hover:text-[#a1a1aa] transition-colors">PRIVACY</a>
@@ -210,7 +230,7 @@ const LoginUsingOTP = () => {
                     <a href="/support" className="hover:text-[#a1a1aa] transition-colors">SUPPORT</a>
                     <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-[#a1a1aa] transition-colors">GITHUB</a>
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 };

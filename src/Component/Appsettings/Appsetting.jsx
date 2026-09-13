@@ -19,7 +19,11 @@ function Appsetting() {
 
     const handleLogout = async () => {
         try {
-            await userAuthService.logoutFromCurrentdevice();
+            let success = await userAuthService.logoutFromCurrentdevice();
+            if (success) {
+                showToast("success", "Successfully logout from current device")
+            }
+
         } catch (error) {
             showToast("warning", "Logout encountered an issue, but you have been signed out locally.");
         } finally {

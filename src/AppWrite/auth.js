@@ -1,5 +1,6 @@
 import AppwriteConf from '../appwriteConfigrationKeys/ConfigrationofAppwrite'
-import { Client, Account, ID, Functions } from 'appwrite'
+import { Client, Account, ID, Functions, OAuthProvider } from 'appwrite'
+
 
 export class UserAuthentication {
 
@@ -32,7 +33,7 @@ export class UserAuthentication {
             };
         } catch (error) {
             throw error;
-        } 
+        }
     }
 
     // 4. PHASE 2: Verify OTP and Login
@@ -98,10 +99,8 @@ export class UserAuthentication {
             return await this.account.get();
         } catch (error) {
             // 401 error is expected if no session exists, so we don't log it as an error
-            if (error.code !== 401) {
-                console.error("Appwrite service :: getCurrentUser :: error", error);
-            }
-            return null;
+            console.error("GET CURRENT USER ERROR:", error);
+            throw error;
         }
     }
 
@@ -142,6 +141,35 @@ export class UserAuthentication {
             throw error;
         }
     }
+
+    // Login with Google
+    async loginWithGoogle() {
+        try {
+            const success = `${window.location.origin}/oauth-success`;
+            const failure = `${window.location.origin}/oauth-failure`;
+
+            // Use createOAuth2Token for Web (Appwrite v14+) which redirects and passes userId/secret to the success URL
+            await this.account.createOAuth2Token(
+                OAuthProvider.Google,
+                success,
+                failure
+            );
+        } catch (error) {
+            console.error("Google Login Error:", error);
+            throw error;
+        }
+    }
+
+    // Create Appwrite session after Google OAuth
+    async createOAuthSession(userId, secret) {
+        try {
+            return await this.account.createSession(userId, secret);
+        } catch (error) {
+            console.error("OAuth Session Error:", error);
+            throw error;
+        }
+    }
+
 }
 
 const userAuthService = new UserAuthentication();

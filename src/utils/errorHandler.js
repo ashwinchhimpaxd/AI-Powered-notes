@@ -24,11 +24,11 @@ function normalizeError(error) {
       if (statusCode === 401) message = "Unauthorized. Please login.";
       else if (statusCode === 403) message = "Access denied.";
       else if (statusCode === 404) message = "Requested resource not found.";
-      else message = "Request failed. Please check your input or try again.";
+      else message = error?.message || "Request failed. Please check your input or try again.";
     } else if (statusCode >= 500) {
       type = "server";
       if (statusCode === 503) message = "Service temporarily unavailable. Try again shortly.";
-      else message = "Server is currently unavailable. Please try again later.";
+      else message = error?.message || "Server is currently unavailable. Please try again later.";
     }
   }
 

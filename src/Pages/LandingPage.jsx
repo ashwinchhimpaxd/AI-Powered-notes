@@ -25,7 +25,7 @@ function LandingPage() {
     return (
         <div id='Home' className="min-h-screen bg-background text-foreground selection:bg-[#a855f7]/30 selection:text-white font-sans relative overflow-x-hidden">
             {/* Background gradient effects */}
-            <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[80%] h-[500px] bg-[#7e22ce]/20 blur-[120px] rounded-full pointer-events-none"></div>
+            <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[80%] h-125 bg-[#7e22ce]/20 blur-[120px] rounded-full pointer-events-none"></div>
 
             {/* Navbar */}
             <nav className="flex justify-between items-center px-6 md:px-12 py-6 max-w-7xl mx-auto relative z-10">

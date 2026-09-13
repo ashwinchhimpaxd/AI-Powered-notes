@@ -10,6 +10,8 @@ import Notfoundpage from "./Pages/Notfoundpage";
 import ToastContainer from "./Component/Toast/ToastContainer";
 import Appsetting from "./Component/Appsettings/Appsetting";
 import RecentNotes from "./Component/DashBoardComps/Recentnotes";
+import OAuthSuccess from "./Pages/OAuthSuccess";
+import OAuthFailure from "./Pages/OAuthFailure";
 // Lazy Loaded Components (Heavy chunks)
 const Dashboard2 = lazy(() => import("./Pages/Dashboard.jsx"));
 const Editorpage = lazy(() => import("./Pages/Editorpage.jsx"));
@@ -94,7 +96,23 @@ function App() {
             }
           />
 
+          <Route path="/oauth-success"
+            element={
 
+              <ProtectedRoute authentication={false}>
+                <OAuthSuccess />
+              </ProtectedRoute>
+
+            } />
+
+          <Route
+            path="/oauth-failure"
+            element={
+              <ProtectedRoute authentication={false}>
+                <OAuthFailure />
+              </ProtectedRoute>
+            }
+          />
 
           {/* PRIVATE */}
           <Route
