@@ -64,7 +64,7 @@ function SideNavBar({ isOpen, setIsOpen }) {
                         {/* Animated Background */}
                         <div
                             className="absolute left-3 right-3 h-10.5 bg-card border border-border rounded-lg transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] pointer-events-none"
-                            style={{ transform: `translateY(calc(${activeIndex} * 42px + ${activeIndex} * 4px))` }}
+                            style={{ transform: `translateY(calc(${activeIndex} * 2.625rem + ${activeIndex} * 0.25rem))` }}
                         />
 
                         <Link to={'/dashboard/recent-notes'} className="z-10">
