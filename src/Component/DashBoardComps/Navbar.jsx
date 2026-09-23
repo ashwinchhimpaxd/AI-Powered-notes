@@ -27,7 +27,7 @@ function SideNavBar({ isOpen, setIsOpen }) {
                 />
             )}
 
-            <aside className={`fixed md:relative top-0 left-0 w-[240px] flex-shrink-0 bg-background border-r border-border flex flex-col justify-between h-full z-40 transition-transform duration-300 ease-in-out
+            <aside className={`fixed md:relative top-0 left-0 w-60 shrink-0 bg-background border-r border-border flex flex-col justify-between h-full z-40 transition-transform duration-300 ease-in-out
                 ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
             `}>
                 {/* Top Section */}
@@ -36,17 +36,15 @@ function SideNavBar({ isOpen, setIsOpen }) {
                     <div className="p-6 pb-8 flex items-center justify-between">
                         <div className="flex items-center gap-2 px-2">
                             {/* Glowing Orb Container */}
-                            <div className="relative size-8 flex items-center justify-center flex-shrink-0">
-                                {/* Background Blur Glow */}
-                                <div className="absolute inset-0 bg-blue-500/30 blur-md rounded-full"></div>
-                                {/* Icon Wrapper */}
-                                <div className="relative size-7 rounded-full bg-slate-900 flex items-center justify-center shadow-md">
-                                    <span className="text-[14px]">✨</span>
+                            <div className="relative size-8 flex items-center justify-center shrink-0">
+                               
+                                <div className="relative size-7 rounded-full flex items-center justify-center ">
+                                    <span className="text-[24px]">✨</span>
                                 </div>
                             </div>
 
                             {/* MindSync Text */}
-                            <h1 className="font-[900] text-[1.4rem] tracking-tighter bg-gradient-to-r from-white via-blue-100 to-indigo-400 bg-clip-text text-transparent drop-shadow-sm">
+                            <h1 className="font-black text-[1.4rem] tracking-tighter bg-linear-to-r from-purple-300 via-blue-300 to-indigo-300 bg-clip-text text-transparent drop-shadow-sm">
                                 MindSync
                             </h1>
                         </div>
@@ -65,12 +63,12 @@ function SideNavBar({ isOpen, setIsOpen }) {
                     <nav className="flex flex-col gap-1 px-3 relative">
                         {/* Animated Background */}
                         <div
-                            className="absolute left-3 right-3 h-[42px] bg-card border border-border rounded-lg transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] pointer-events-none"
+                            className="absolute left-3 right-3 h-10.5 bg-card border border-border rounded-lg transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] pointer-events-none"
                             style={{ transform: `translateY(calc(${activeIndex} * 42px + ${activeIndex} * 4px))` }}
                         />
 
                         <Link to={'/dashboard/recent-notes'} className="z-10">
-                            <div className={`flex items-center gap-3 px-3 h-[42px] rounded-lg cursor-pointer group transition-colors ${activeIndex === 0 ? 'text-foreground' : 'text-muted-foreground  hover:text-foreground'}`}>
+                            <div className={`flex items-center gap-3 px-3 h-10.5 rounded-lg cursor-pointer group transition-colors ${activeIndex === 0 ? 'text-foreground' : 'text-muted-foreground  hover:text-foreground'}`}>
                                 <Note className={`size-5 transition-colors ${activeIndex === 0 ? 'text-[#8b5cf6]' : 'group-hover:text-foreground'}`} weight={activeIndex === 0 ? "fill" : "regular"} />
                                 <span className="font-medium text-sm">Notes</span>
                             </div>
@@ -78,7 +76,7 @@ function SideNavBar({ isOpen, setIsOpen }) {
 
 
                         <Link to={'/dashboard/setting'} className="z-10">
-                            <div className={`flex items-center gap-3 px-3 h-[42px] rounded-lg cursor-pointer group transition-colors ${activeIndex === 1 ? 'text-foreground' : 'text-muted-foreground  hover:text-foreground'}`}>
+                            <div className={`flex items-center gap-3 px-3 h-10.5 rounded-lg cursor-pointer group transition-colors ${activeIndex === 1 ? 'text-foreground' : 'text-muted-foreground  hover:text-foreground'}`}>
                                 <GearSix className={`size-5 transition-colors ${activeIndex === 1 ? 'text-[#8b5cf6]' : 'group-hover:text-foreground'}`} weight={activeIndex === 1 ? "fill" : "regular"} />
                                 <span className="font-medium text-sm">Settings</span>
                             </div>

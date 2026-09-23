@@ -11,7 +11,7 @@ import { getMaxTokens } from "./AiModelTokesAndLimites/ModelTokensAndLimites";
 class AIService {
 
     constructor() {
-        this.baseURL = `${window.location.origin}/api/nvidia`;
+        this.baseURL = `${window.location.origin}/api/gemini`;
     }
 
     async sendMessage(
@@ -31,21 +31,21 @@ class AIService {
                     systemPrompt ||
                     `You are a helpful AI notes assistant.
 
-When the user explicitly asks you to create a note,
-output it using this exact syntax:
+                    When the user explicitly asks you to create a note,
+                    output it using this exact syntax:
 
-[CREATE_NOTE]
-{
-"title": "The Note Title",
-"content": "HTML formatted note content"
-}
-[/CREATE_NOTE]
+                    [CREATE_NOTE]
+                    {
+                    "title": "The Note Title",
+                    "content": "HTML formatted note content"
+                    }
+                    [/CREATE_NOTE]
 
-Rules:
-- No markdown code blocks
-- Keep notes clean and structured
-- Use proper HTML formatting
-- Be concise and readable`
+                    Rules:
+                    - No markdown code blocks
+                    - Keep notes clean and structured
+                    - Use proper HTML formatting
+                    - Be concise and readable`
             },
             {
                 role: "user",
@@ -55,25 +55,22 @@ Rules:
 
         // Compute max_tokens and temperature from actual prompt length
         const fullPromptText = (systemPrompt || "") + prompt;
-        const { max_tokens, temperature } = getMaxTokens(task, fullPromptText);
+        const { max_tokens } = getMaxTokens(task, fullPromptText);
         const isStreaming = !!onChunk;
 
         const requestParams = {
-            // model: "nvidia/nemotron-3-super-120b-a12b",
-            model: "nvidia/nemotron-3-ultra-550b-a55b",
+            model: "gemini-3.5-flash-lite",
             messages,
             max_tokens,
-            temperature,
-            top_p: 1,
+            // temperature,
+            // top_p: 1,
             stream: isStreaming,
         };
+
         try {
 
             if (jsonMode) {
-
-                requestParams.response_format = {
-                    type: "json_object"
-                };
+                requestParams.response_format = { type: "json_object" };
             }
 
             const response = await fetch(

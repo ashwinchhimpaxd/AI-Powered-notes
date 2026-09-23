@@ -97,6 +97,7 @@ const NotesCreation = createSlice({
         updateNoteInSlice: notesAdapter.upsertOne,
         deleteNote: notesAdapter.removeOne,
         clearNotes: notesAdapter.removeAll,
+        
         setHasMore: (state, action) => {
             state.hasMore = action.payload;
         },

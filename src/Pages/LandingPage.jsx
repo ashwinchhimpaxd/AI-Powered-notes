@@ -31,7 +31,9 @@ function LandingPage() {
             {/* Navbar */}
             <nav className="flex justify-between items-center px-6 md:px-12 py-6 max-w-7xl mx-auto relative z-10">
                 <div className="font-bold text-xl md:text-2xl tracking-tight flex items-center gap-2 cursor-pointer">
-                    Mind Sync
+                    <h1 className="font-black text-[1.4rem] tracking-tighter bg-linear-to-r from-purple-300 via-blue-300 to-indigo-300 bg-clip-text text-transparent drop-shadow-sm">
+                        MindSync
+                    </h1>
                 </div>
                 <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground font-medium">
                     <button type="button" onClick={handleGetStarted} className="bg-[#8b5cf6] hover:bg-[#7c3aed] text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-[0_0_20px_rgba(139,92,246,0.3)]">
@@ -90,7 +92,7 @@ function LandingPage() {
                         <div className="w-3 h-3 rounded-full bg-border"></div>
                         <div className="w-3 h-3 rounded-full bg-border"></div>
                     </div>
-                    <div className="p-4 md:p-8 flex flex-col md:flex-row gap-6 h-[300px] md:h-[400px] relative z-10">
+                    <div className="p-4 md:p-8 flex flex-col md:flex-row gap-6 h-75 md:h-100 relative z-10">
                         {/* Mockup Editor Content */}
                         <div className="flex-1 flex flex-col gap-4">
                             <div className="w-3/4 h-8 bg-muted/40 rounded-md"></div>

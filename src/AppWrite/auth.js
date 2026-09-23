@@ -100,7 +100,7 @@ export class UserAuthentication {
         } catch (error) {
             // 401 error is expected if no session exists, so we don't log it as an error
             console.error("GET CURRENT USER ERROR:", error);
-            throw error;
+            return error;
         }
     }
 

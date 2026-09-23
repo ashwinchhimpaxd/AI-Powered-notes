@@ -36,7 +36,6 @@ const handleDateChange = (val, setter, prevValue) => {
  */
 const DateRangeFilter = ({ startDate, setStartDate, endDate, setEndDate }) => {
   const [draftsActive, setDraftsActive] = useState(false);
-  const [sharedActive, setSharedActive] = useState(false);
 
   return (
     <div className="flex flex-col gap-4">
@@ -97,20 +96,7 @@ const DateRangeFilter = ({ startDate, setStartDate, endDate, setEndDate }) => {
           {draftsActive ? <X size={10} weight="bold" /> : <Plus size={10} weight="bold" />}
         </button>
 
-        {/* Shared tag */}
-        <button
-          type="button"
-          onClick={() => setSharedActive(!sharedActive)}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
-            sharedActive
-              ? "bg-muted/40 border-[#b49cf8]/30 text-foreground"
-              : "bg-card border-border text-muted-foreground/60"
-          }`}
-        >
-          <span className={`w-1.5 h-1.5 rounded-full ${sharedActive ? "bg-[#b49cf8]" : "bg-muted-foreground/35"}`} />
-          <span>Shared</span>
-          {sharedActive ? <X size={10} weight="bold" /> : <Plus size={10} weight="bold" />}
-        </button>
+
       </div>
     </div>
   );

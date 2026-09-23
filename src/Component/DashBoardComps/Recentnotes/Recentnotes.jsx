@@ -41,19 +41,15 @@ const RecentNotes = memo((props) => {
     const { loading, hasMore, lastCursor, filter } = useSelector((state) => state.NotesCreation);
     const currentuserID = useSelector((state) => state.UserAuthantication.UserData?.userdetaild?.$id) || "";
 
-    // Trigger initial fetch or reload when filters/user changes
     useEffect(() => {
         if (!currentuserID) return;
 
         // Fetch notes if:
-        // 1. Redux slice is empty (first load or new login) OR
-        // 2. lastCursor is null and hasMore is true (filters reset or changed)
-        const isSliceEmpty = noteIds.length === 0;
-
-        if (isSliceEmpty || (!lastCursor && hasMore)) {
+        // lastCursor is null and hasMore is true (first load, or filters reset/changed)
+        if (!lastCursor && hasMore) {
             dispatch(fetchNotesThunk({ userId: currentuserID }));
         }
-    }, [currentuserID, filter, lastCursor, hasMore, dispatch, noteIds.length]);
+    }, [currentuserID, filter, lastCursor, hasMore, dispatch]);
 
     // Load More function for Infinite Scroll
     const loadMoreNotes = useCallback(async () => {

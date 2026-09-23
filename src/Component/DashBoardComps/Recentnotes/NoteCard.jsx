@@ -17,7 +17,7 @@ const NoteCard = memo(({
     onClick
 }) => {
     const note = useSelector((state) => selectNoteById(state, noteId));
-
+    // console.log(note)
     const cleanContent = useMemo(() => {
         return note?.notes_contect
             ? note.notes_contect.replace(/<[^>]+>/g, "").trim()
@@ -26,7 +26,7 @@ const NoteCard = memo(({
 
     const menuRef = useRef(null);
     const buttonRef = useRef(null);
-
+    
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (openMenu &&
@@ -113,7 +113,6 @@ const NoteCard = memo(({
                 <NoteCardFooter
                     note={note}
                     onToggleStar={onToggleStar}
-                    cleanContent={cleanContent}
                 />
             </div>
 

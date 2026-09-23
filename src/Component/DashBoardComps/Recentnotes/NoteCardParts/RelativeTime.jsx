@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, memo } from "react";
 
 const RelativeTime = memo(({ updatedAt }) => {
     const [now, setNow] = useState(Date.now());
-    
+
     useEffect(() => {
         const interval = setInterval(() => {
             setNow(Date.now());
@@ -12,10 +12,14 @@ const RelativeTime = memo(({ updatedAt }) => {
 
     const relativeModified = useMemo(() => {
         if (!updatedAt) return "";
-        const diffMs = now - new Date(updatedAt);
+
+        // Use Date.now() instead of stale 'now' state to prevent negative time diffs when updatedAt changes.
+        const diffMs = Date.now() - new Date(updatedAt);
         const diffMin = Math.floor(diffMs / 60000);
+        
         if (diffMin < 1) return "Just now";
         if (diffMin < 60) return `${diffMin}m ago`;
+        
         const diffHrs = Math.floor(diffMin / 60);
         if (diffHrs < 24) return `${diffHrs}h ago`;
         return new Date(updatedAt).toLocaleDateString("en-US", {

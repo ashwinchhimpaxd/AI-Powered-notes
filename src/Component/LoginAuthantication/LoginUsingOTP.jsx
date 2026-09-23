@@ -68,14 +68,7 @@ const LoginUsingOTP = () => {
     )
     const onSubmit = async (data) => {
         try {
-            const currentUser = await userAuthService.getCurrentUser();
-
-            if (currentUser) {
-                dispatch(login({ UserData: { userdetaild: currentUser } }));
-                navigate("/Dashboard");
-                return;
-            }
-
+           
             const Userlogin = await userAuthService.verifyOtp(otpUserId, String(data.OTP), "");
             if (Userlogin) {
                 // Fetch actual User object to have correct user details and user $id

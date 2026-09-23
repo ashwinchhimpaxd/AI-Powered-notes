@@ -105,15 +105,15 @@ export const AI_COMMANDS = [
       "Suggest relevant topics, concepts, or subtopics that naturally extend the current content.",
     task: "generateShort"
   },
-  {
-    id: "explain",
-    mode: "append",
-    icon: <ChatTeardropText />,
-    label: "Explain This",
-    description:
-      "Add a clear and beginner-friendly explanation of the selected content using simple language and practical examples when helpful.",
-    task: "generateStandard"
-  },
+  // {
+  //   id: "explain",
+  //   mode: "append",
+  //   icon: <ChatTeardropText />,
+  //   label: "Explain This",
+  //   description:
+  //     "Add a clear and beginner-friendly explanation of the selected content using simple language and practical examples when helpful.",
+  //   task: "generateStandard"
+  // },
 
   {
     id: "conclusion",

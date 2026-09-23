@@ -59,14 +59,14 @@ const NoteCardMenu = memo(({ openMenu, menuRef, onClick, onDelete, note }) => {
                 onClick={() => onClick(note)}
                 className="px-4 py-2.5 text-xs font-semibold text-foreground hover:bg-muted hover:text-foreground text-left transition-colors cursor-pointer"
             >
-                Open Editor
+                Open in Editor
             </button>
             <button
                 type="button"
                 onClick={(e) => handleExportPDF(e, note)}
                 className="px-4 py-2.5 text-xs font-semibold text-foreground hover:bg-muted hover:text-foreground text-left transition-colors cursor-pointer"
             >
-                Export as Pdf
+                Export as PDF
             </button>
             <button
                 type="button"
