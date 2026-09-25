@@ -2,6 +2,7 @@ import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import React, { Suspense, lazy, useEffect, useState } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 // Standard Components (Lightweight)
 import Login from "./Pages/LoginPage";
@@ -79,6 +80,7 @@ function App() {
 
   return (
     <div className="h-screen w-full">
+      <SpeedInsights />
       <ToastContainer />
       <BrowserRouter>
         <Routes>
