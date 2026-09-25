@@ -14,12 +14,3 @@ An intelligent note-taking app built with **React**, **Appwrite**, and integrate
 - 🌈 Responsive and intuitive UI
 - 📁 Image upload and content embedding support
 
----
-
-## ⚙️ Getting Started
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
